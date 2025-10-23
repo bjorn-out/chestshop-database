@@ -29,6 +29,7 @@ public interface DatabaseInterface {
         for (Map.Entry<String, byte[]> entry : itemBytes.entrySet()) {
             insertItem(entry.getKey(), entry.getValue());
         }
+        flushSession();
     }
 
 
@@ -76,6 +77,7 @@ public interface DatabaseInterface {
         // make sure items exist before inserting shops...
         insertItems(items);
         shops.forEach(this::insertShop);
+        flushSession();
     }
 
     void deleteShopByPos(@Nonnull UUID world, int x, int y, int z);

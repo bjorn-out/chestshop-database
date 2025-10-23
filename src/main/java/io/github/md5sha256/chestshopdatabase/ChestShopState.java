@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 public class ChestShopState {
 
@@ -33,10 +32,7 @@ public class ChestShopState {
     }
 
     @Nonnull
-    public CompletableFuture<Void> flush(
-            @Nonnull DatabaseInterface database,
-            @Nonnull ExecutorService executor
-    ) {
+    public Consumer<DatabaseInterface> flushTask() {
         List<HydratedShop> created = List.copyOf(this.createdShops.values());
         List<HydratedShop> updated = List.copyOf(this.updatedShops.values());
         List<HydratedShop> toInsert = new ArrayList<>(created.size() + updated.size());
@@ -46,17 +42,11 @@ public class ChestShopState {
         this.createdShops.clear();
         this.updatedShops.clear();
         this.deletedShops.clear();
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        executor.submit(() -> {
-            try {
-                deleted.forEach(database::deleteShopByPos);
-                database.insertShops(toInsert);
-                database.flushSession();
-            } catch (Exception ex) {
-                future.completeExceptionally(ex);
-            }
-        });
-        return future;
+        return (database) -> {
+            deleted.forEach(database::deleteShopByPos);
+            database.insertShops(toInsert);
+            database.flushSession();
+        };
     }
 
     public boolean cachedShopRegistered(@Nonnull BlockPosition position) {
