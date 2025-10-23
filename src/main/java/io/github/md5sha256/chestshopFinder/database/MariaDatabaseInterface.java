@@ -86,7 +86,7 @@ public class MariaDatabaseInterface implements DatabaseInterface {
             BEFORE UPDATE ON Shop
             FOR EACH ROW
             BEGIN
-                SELECT NEW.last_updated = unixepoch();
+                SELECT NEW.last_updated = CURRENT_TIMESTAMP
             END;
             """;
 
