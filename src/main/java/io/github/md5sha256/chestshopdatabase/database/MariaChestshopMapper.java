@@ -105,7 +105,7 @@ public interface MariaChestshopMapper extends DatabaseInterface {
                                          @Param("item_code") @Nonnull String itemCode);
 
     @Override
-    @SelectProvider(type = MariaDatabaseUtil.class, method = "selectShopByWorldItemDistance")
+    @SelectProvider(type = MariaDatabaseUtil.class, method = "selectShopsByWorldItemDistance")
     @Nonnull
     List<Shop> selectShopsByWorldItemDistance(
             @Nonnull ShopType shopType,
@@ -114,6 +114,6 @@ public interface MariaChestshopMapper extends DatabaseInterface {
             @Param("x") int x,
             @Param("y") int y,
             @Param("z") int z,
-            @Param("distance") double maxDistance
+            @Param("distance") double distance
     );
 }
