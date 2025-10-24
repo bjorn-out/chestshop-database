@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface MariaChestshopMapper extends DatabaseInterface {
+public interface MariaChestshopMapper extends DatabaseMapper {
 
     @Override
     @Delete("""

@@ -1,6 +1,7 @@
 package io.github.md5sha256.chestshopdatabase.database;
 
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.jdbc.SQL;
 
 import javax.annotation.Nonnull;
@@ -9,7 +10,8 @@ import java.util.UUID;
 public class MariaDatabaseUtil {
 
     @Nonnull
-    public String selectShopsByItem(@Nonnull ShopType shopType, @Nonnull String itemCode) {
+    public String selectShopsByItem(@Nonnull ShopType shopType,
+                                    @Param("item_code") @Nonnull String itemCode) {
         return new SQL()
                 .SELECT("""
                         CAST(world_uuid AS BINARY(16))
@@ -25,15 +27,16 @@ public class MariaDatabaseUtil {
                         """)
                 .FROM("Shop")
                 .WHERE("item_code = #{item_code}")
-                .applyIf(shopType == ShopType.BUY, sql -> sql.WHERE("buy_price IS NOT NULL", "stock > 0"))
+                .applyIf(shopType == ShopType.BUY,
+                        sql -> sql.WHERE("buy_price IS NOT NULL", "stock > 0"))
                 .applyIf(shopType == ShopType.SELL, sql -> sql.WHERE("sell_price IS NOT NULL"))
                 .toString();
     }
 
     @Nonnull
     public String selectShopsByWorldAndItem(@Nonnull ShopType shopType,
-                                            @Nonnull UUID world,
-                                            @Nonnull String itemCode) {
+                                            @Param("world_uuid") @Nonnull UUID world,
+                                            @Param("item_code") @Nonnull String itemCode) {
         return new SQL()
                 .SELECT("""
                         CAST(world_uuid AS BINARY(16)) AS worldID,
@@ -48,7 +51,8 @@ public class MariaDatabaseUtil {
                         stock
                         """)
                 .FROM("Shop")
-                .WHERE("item_code = #{item_code}", "world_uuid = #{world_uuid, javaType=java.util.UUID, jdbcType=OTHER}")
+                .WHERE("item_code = #{item_code}",
+                        "world_uuid = #{world_uuid, javaType=java.util.UUID, jdbcType=OTHER}")
                 .applyIf(shopType == ShopType.BUY, sql -> sql.WHERE("buy_price IS NOT NULL"))
                 .applyIf(shopType == ShopType.SELL, sql -> sql.WHERE("sell_price IS NOT NULL"))
                 .toString();
@@ -57,12 +61,12 @@ public class MariaDatabaseUtil {
     @Nonnull
     public String selectShopsByWorldItemDistance(
             @Nonnull ShopType shopType,
-            @Nonnull UUID world,
-            @Nonnull String itemCode,
-            int x,
-            int y,
-            int z,
-            double distance
+            @Param("world_uuid") @Nonnull UUID world,
+            @Param("item_code") @Nonnull String itemCode,
+            @Param("x") int x,
+            @Param("y") int y,
+            @Param("z") int z,
+            @Param("distance") double distance
     ) {
         return """
                 """ +
@@ -81,7 +85,8 @@ public class MariaDatabaseUtil {
                                 #{distance} * #{distance} AS distanceSquared
                                 """)
                         .FROM("Shop")
-                        .WHERE("item_code = #{item_code}", "world_uuid = #{world_uuid, javaType=java.util.UUID, jdbcType=OTHER}")
+                        .WHERE("item_code = #{item_code}",
+                                "world_uuid = #{world_uuid, javaType=java.util.UUID, jdbcType=OTHER}")
                         .applyIf(shopType == ShopType.BUY,
                                 sql -> sql.WHERE("buy_price IS NOT NULL"))
                         .applyIf(shopType == ShopType.SELL,
