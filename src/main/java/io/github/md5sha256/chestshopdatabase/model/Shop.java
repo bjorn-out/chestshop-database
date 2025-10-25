@@ -34,4 +34,13 @@ public record Shop(
     public int remainingCapacity() {
         return this.estimatedCapacity == -1 ? -1 : this.estimatedCapacity - stock;
     }
+
+    public ShopType shopType() {
+        if (this.buyPrice != null && this.sellPrice != null) {
+            return ShopType.BOTH;
+        } else if (this.sellPrice != null) {
+            return ShopType.SELL;
+        }
+        return ShopType.BUY;
+    }
 }

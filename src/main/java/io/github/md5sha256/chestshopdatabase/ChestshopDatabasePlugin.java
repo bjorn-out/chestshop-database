@@ -1,11 +1,13 @@
 package io.github.md5sha256.chestshopdatabase;
 
 import io.github.md5sha256.chestshopdatabase.command.CommandBean;
-import io.github.md5sha256.chestshopdatabase.command.FindShopsCommand;
+import io.github.md5sha256.chestshopdatabase.command.DebugFindCommand;
+import io.github.md5sha256.chestshopdatabase.command.FindCommand;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
 import io.github.md5sha256.chestshopdatabase.database.MariaChestshopMapper;
 import io.github.md5sha256.chestshopdatabase.database.MariaDatabase;
+import io.github.md5sha256.chestshopdatabase.gui.ShopGUI;
 import io.github.md5sha256.chestshopdatabase.listener.ChestShopListener;
 import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.UnsafeChestShopSign;
@@ -33,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public final class ChestshopDatabasePlugin extends JavaPlugin {
@@ -41,6 +44,8 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     private ChestShopState shopState;
     private ItemDiscoverer discoverer;
     private Settings settings;
+    private ShopGUI gui;
+    private ExecutorState executorState;
 
     @Override
     public void onLoad() {
@@ -61,6 +66,9 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         getLogger().info("Plugin enabled");
         shopState = new ChestShopState(Duration.ofMinutes(5));
         discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer());
+        BukkitScheduler scheduler = getServer().getScheduler();
+        executorState = new ExecutorState(databaseExecutor, scheduler.getMainThreadExecutor(this));
+        gui = new ShopGUI(this);
         getServer().getPluginManager()
                 .registerEvents(new ChestShopListener(shopState, discoverer), this);
         SqlSessionFactory sessionFactory = MariaDatabase.buildSessionFactory(this.settings.databaseSettings());
@@ -83,11 +91,18 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
 
     private void registerCommands(@Nonnull SqlSessionFactory sessionFactory) {
         Executor mainThreadExec = getServer().getScheduler().getMainThreadExecutor(this);
+        Supplier<DatabaseSession> sessionSupplier = () -> new DatabaseSession(sessionFactory,
+                MariaChestshopMapper.class);
         List<CommandBean> commands = List.of(
-                new FindShopsCommand(this.shopState,
-                        () -> new DatabaseSession(sessionFactory, MariaChestshopMapper.class),
+                new DebugFindCommand(this.shopState,
+                        sessionSupplier,
                         this.databaseExecutor,
-                        mainThreadExec)
+                        mainThreadExec),
+                new FindCommand(this.shopState,
+                        this.discoverer,
+                        sessionSupplier,
+                        this.executorState,
+                        this.gui)
         );
         this.getLifecycleManager().registerEventHandler(
                 LifecycleEvents.COMMANDS, event -> {

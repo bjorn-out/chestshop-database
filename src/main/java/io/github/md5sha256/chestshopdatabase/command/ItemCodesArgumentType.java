@@ -15,19 +15,26 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public record ItemCodesArgumentType(
-        @Nonnull ChestShopState shopState) implements CustomArgumentType<String, String> {
+public class ItemCodesArgumentType implements CustomArgumentType<String, String> {
 
-    @Override
-    @Nonnull
-    public ArgumentType<String> getNativeType() {
-        return StringArgumentType.word();
+    private final ArgumentType<String> nativeType = StringArgumentType.greedyString();
+    private final ChestShopState shopState;
+
+    public ItemCodesArgumentType(@Nonnull ChestShopState shopState) {
+        this.shopState = shopState;
     }
 
 
     @Override
-    public String parse(StringReader reader) throws CommandSyntaxException {
-        return reader.readString();
+    @Nonnull
+    public ArgumentType<String> getNativeType() {
+        return this.nativeType;
+    }
+
+
+    @Override
+    public String parse(@Nonnull StringReader reader) throws CommandSyntaxException {
+        return this.nativeType.parse(reader);
     }
 
     @Override

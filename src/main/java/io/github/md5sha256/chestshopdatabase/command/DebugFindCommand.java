@@ -21,14 +21,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-public record FindShopsCommand(@Nonnull ChestShopState shopState,
+public record DebugFindCommand(@Nonnull ChestShopState shopState,
                                @Nonnull Supplier<DatabaseSession> databaseSupplier,
                                @Nonnull ExecutorService dbExec,
                                @Nonnull Executor mainThreadExec) implements CommandBean.Single {
 
     @Override
     public @NotNull LiteralArgumentBuilder<CommandSourceStack> command() {
-        return Commands.literal("find")
+        return Commands.literal("debugfind")
                 .requires(sourceStack -> sourceStack.getSender() instanceof Player)
                 .then(Commands.argument("itemCode", new ItemCodesArgumentType(shopState))
                         .executes(ctx -> {
