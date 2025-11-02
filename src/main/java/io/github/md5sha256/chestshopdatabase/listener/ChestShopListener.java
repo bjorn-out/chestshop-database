@@ -62,6 +62,10 @@ public record ChestShopListener(
         Double sellPrice = sellPriceDecimal.equals(PriceUtil.NO_PRICE) ? null : toDouble(
                 sellPriceDecimal);
         this.discoverer.discoverItemCode(itemCode, itemStack -> {
+            if (itemStack == null || itemStack.isEmpty()) {
+                // FIXME log warning
+                return;
+            }
             HydratedShop shop = new HydratedShop(
                     world,
                     posX,
