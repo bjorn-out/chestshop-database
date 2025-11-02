@@ -2,3 +2,5 @@ database-settings:
   url: ''
   username: ''
   password: ''
+
+result-gui-click-command: ''

@@ -10,10 +10,14 @@ import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.component.PagingButtons;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
+import io.github.md5sha256.chestshopdatabase.settings.Settings;
+import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -25,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record ShopResultsGUI(@Nonnull Plugin plugin) {
+public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings) {
 
     private static String priceToString(Double price) {
         return price == null ? "N/A" : price.toString();
@@ -88,8 +92,36 @@ public record ShopResultsGUI(@Nonnull Plugin plugin) {
         return new GuiItem(item, event -> event.setCancelled(true), this.plugin);
     }
 
-    public ChestGui createGui(@Nonnull Component title, @Nonnull List<Shop> shops, @Nonnull ItemStack shopItem) {
-        return createGui(title, shops, shopItem,null);
+    public ChestGui createGui(@Nonnull Component title,
+                              @Nonnull List<Shop> shops,
+                              @Nonnull ItemStack shopItem) {
+        return createGui(title, shops, shopItem, null);
+    }
+
+    @Nonnull
+    private String injectPlaceholders(@Nonnull String s, @Nonnull Shop shop) {
+        BlockPosition pos = shop.blockPosition();
+        return s.replace("<x>", String.valueOf(pos.x()))
+                .replace("<y>", String.valueOf(pos.y()))
+                .replace("<z>", String.valueOf(pos.z()));
+    }
+
+    private GuiItem shopToGuiItem(@Nonnull Shop shop) {
+        String clickCommand = settings().clickCommand();
+        if (clickCommand == null || clickCommand.isEmpty()) {
+            return new GuiItem(shopToIcon(shop), this.plugin);
+        }
+
+        String injected = injectPlaceholders(clickCommand, shop);
+
+        return new GuiItem(shopToIcon(shop), (event) -> {
+            event.setCancelled(true);
+            event.getView().close();
+            HumanEntity clicked = event.getWhoClicked();
+            if (clicked instanceof Player player) {
+                player.performCommand(injected);
+            }
+        }, this.plugin);
     }
 
     public ChestGui createGui(@Nonnull Component title,
@@ -99,7 +131,7 @@ public record ShopResultsGUI(@Nonnull Plugin plugin) {
         ChestGui gui = new ChestGui(6, ComponentHolder.of(title), this.plugin);
         List<GuiItem> items = new ArrayList<>();
         for (Shop shop : shops) {
-            GuiItem item = new GuiItem(shopToIcon(shop), this.plugin);
+            GuiItem item = shopToGuiItem(shop);
             items.add(item);
         }
         PaginatedPane mainPane = new PaginatedPane(9, 5);
