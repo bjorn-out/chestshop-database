@@ -62,7 +62,7 @@ public record ShopResultsGUI(@Nonnull Plugin plugin) {
                 Component.text(String.format("Stock: %d", shop.stock()),
                         NamedTextColor.YELLOW),
                 Component.text(String.format("Remaining Capacity: %s",
-                        capacityToString(shop.remainingCapacity())), NamedTextColor.YELLOW),
+                        capacityToString(shop.estimatedCapacity())), NamedTextColor.YELLOW),
                 Component.text(String.format("Location: %d, %d, %d",
                         shop.posX(),
                         shop.posY(),

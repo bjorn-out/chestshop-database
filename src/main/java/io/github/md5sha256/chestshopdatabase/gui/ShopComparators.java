@@ -19,7 +19,7 @@ public class ShopComparators {
         DEFAULTS.put(ShopAttribute.QUANTITY, Comparator.comparingInt(Shop::quantity));
         DEFAULTS.put(ShopAttribute.STOCK, Comparator.comparingInt(Shop::stock));
         DEFAULTS.put(ShopAttribute.REMAINING_CAPACITY,
-                Comparator.comparingInt(Shop::remainingCapacity));
+                Comparator.comparingInt(Shop::estimatedCapacity));
         DEFAULTS.put(ShopAttribute.BUY_PRICE,
                 Comparator.comparing(Shop::buyPrice, ShopComparators::comparingDouble));
         DEFAULTS.put(ShopAttribute.SELL_PRICE,

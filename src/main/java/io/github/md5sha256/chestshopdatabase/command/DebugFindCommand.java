@@ -83,7 +83,7 @@ public record DebugFindCommand(@Nonnull ChestShopState shopState,
                 .append(Component.text(String.format("Stock: %d", shop.stock()),
                         NamedTextColor.YELLOW))
                 .appendNewline()
-                .append(Component.text(String.format("Remaining Capacity: %s", capacityToString(shop.remainingCapacity())), NamedTextColor.YELLOW))
+                .append(Component.text(String.format("Remaining Capacity: %s", capacityToString(shop.estimatedCapacity())), NamedTextColor.YELLOW))
                 .appendNewline()
                 .append(Component.text(String.format("Location: %d, %d, %d",
                         shop.posX(),

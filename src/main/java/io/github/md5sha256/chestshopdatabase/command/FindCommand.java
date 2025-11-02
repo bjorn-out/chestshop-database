@@ -88,7 +88,7 @@ public record FindCommand(@Nonnull ChestShopState shopState,
                         NamedTextColor.YELLOW))
                 .appendNewline()
                 .append(Component.text(String.format("Remaining Capacity: %s",
-                        capacityToString(shop.remainingCapacity())), NamedTextColor.YELLOW))
+                        capacityToString(shop.estimatedCapacity())), NamedTextColor.YELLOW))
                 .appendNewline()
                 .append(Component.text(String.format("Location: %d, %d, %d",
                         shop.posX(),
