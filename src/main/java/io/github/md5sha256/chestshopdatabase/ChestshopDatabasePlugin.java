@@ -15,6 +15,7 @@ import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.UnsafeChestShopSign;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -41,7 +42,7 @@ import java.util.logging.Logger;
 
 public final class ChestshopDatabasePlugin extends JavaPlugin {
 
-    private final ExecutorService databaseExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private ChestShopState shopState;
     private ItemDiscoverer discoverer;
     private Settings settings;
@@ -133,7 +134,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
             }
             logger.info("Beginning flush task...");
             CompletableFuture.runAsync(() -> {
-                try (SqlSession session = sessionFactory.openSession(false)) {
+                try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
                     DatabaseMapper databaseMapper = session.getMapper(MariaChestshopMapper.class);
                     flushTask.accept(databaseMapper);
                     session.commit();
