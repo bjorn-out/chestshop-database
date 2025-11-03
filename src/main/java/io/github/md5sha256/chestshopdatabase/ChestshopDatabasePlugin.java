@@ -104,19 +104,23 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         Supplier<DatabaseSession> sessionSupplier = () -> new DatabaseSession(sessionFactory,
                 MariaChestshopMapper.class);
         FindTaskFactory taskFactory = new FindTaskFactory(sessionSupplier, executorState);
+        var findCommand = new FindCommand(this.shopState,
+                this.discoverer,
+                taskFactory,
+                this.gui);
         List<CommandBean> commands = List.of(
-                new FindCommand(this.shopState,
-                        this.discoverer,
-                        taskFactory,
-                        this.gui)
+                findCommand
         );
         var csdb = Commands.literal("csdb");
         this.getLifecycleManager().registerEventHandler(
-                LifecycleEvents.COMMANDS, event -> commands.stream()
-                        .map(CommandBean::commands)
-                        .flatMap(List::stream)
-                        .map(literal -> csdb.then(literal).build())
-                        .forEach(event.registrar()::register)
+                LifecycleEvents.COMMANDS, event -> {
+                    commands.stream()
+                            .map(CommandBean::commands)
+                            .flatMap(List::stream)
+                            .map(literal -> csdb.then(literal).build())
+                            .forEach(event.registrar()::register);
+                    event.registrar().register(findCommand.command().build());
+                }
         );
     }
 
