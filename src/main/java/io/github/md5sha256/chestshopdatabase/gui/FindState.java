@@ -44,8 +44,10 @@ public class FindState {
 
     public FindState(@Nonnull FindState other) {
         this.item = other.item;
+        this.world = other.world;
+        this.queryPosition = other.queryPosition;
         this.shopTypes.addAll(other.shopTypes);
-        for (Map.Entry<ShopAttribute, ShopAttributeMeta> entry : attributeMeta.entrySet()) {
+        for (Map.Entry<ShopAttribute, ShopAttributeMeta> entry : other.attributeMeta.entrySet()) {
             this.attributeMeta.put(entry.getKey(), new ShopAttributeMeta(entry.getValue()));
         }
         this.comparators.putAll(other.comparators);

@@ -80,7 +80,10 @@ public record FindCommand(@Nonnull ChestShopState shopState,
             }
             FindState findState = new FindState(
                     new ChestshopItem(itemStack, code),
-                    new ShopComparators().withDistance(queryPosition).build()
+                    new ShopComparators()
+                            .withDefaults()
+                            .withDistance(queryPosition)
+                            .build()
             );
             findState.setWorld(queryPosition.world());
             findState.setQueryPosition(queryPosition);
@@ -104,7 +107,9 @@ public record FindCommand(@Nonnull ChestShopState shopState,
             }
             FindState findState = new FindState(
                     new ChestshopItem(item, itemCode),
-                    new ShopComparators().withDistance(queryPosition).build()
+                    new ShopComparators()
+                            .withDefaults()
+                            .withDistance(queryPosition).build()
             );
             findState.setWorld(queryPosition.world());
             findState.setQueryPosition(queryPosition);

@@ -144,13 +144,14 @@ public class SortDialog {
         return (view, audience) -> {
             for (ShopAttribute attribute : ShopAttribute.values()) {
                 String option = view.getText(attribute.name());
-                if (option == null) {
+                if (option == null || option.equals("disabled")) {
                     findState.clearShopAttributeMeta(attribute);
-                }
-                 else if (option.equals("ascending")) {
+                } else if (option.equals("ascending")) {
                     findState.getOrCreate(attribute).sortDirection(SortDirection.ASCENDING);
                 } else if (option.equals("descending")) {
-                     findState.getOrCreate(attribute).sortDirection(SortDirection.DESCENDING);
+                    findState.getOrCreate(attribute).sortDirection(SortDirection.DESCENDING);
+                } else {
+                    findState.clearShopAttributeMeta(attribute);
                 }
             }
             audience.showDialog(prevDialog.get());
