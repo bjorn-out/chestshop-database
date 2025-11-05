@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings) {
@@ -45,9 +44,9 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
     }
 
     private static String distanceString(Shop shop, @Nullable BlockPosition queryPosition) {
-        if (Optional.ofNullable(queryPosition).isEmpty()) return "∞";
+        if (queryPosition == null) return "∞";
         long squaredDistance = shop.blockPosition().distanceSquared(queryPosition);
-        if (squaredDistance == Integer.MAX_VALUE) return "∞";
+        if (squaredDistance == Long.MAX_VALUE) return "∞";
         return String.format("%d", (long) Math.floor(Math.sqrt(squaredDistance)));
     }
 

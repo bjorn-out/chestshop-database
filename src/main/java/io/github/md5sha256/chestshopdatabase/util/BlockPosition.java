@@ -11,7 +11,7 @@ public record BlockPosition(@Nonnull UUID world, int x, int y, int z) {
 
     public long distanceSquared(@Nonnull BlockPosition other) {
         if (!this.world.equals(other.world)) {
-            return Integer.MAX_VALUE;
+            return Long.MAX_VALUE;
         }
         long dx = this.x - other.x;
         long dy = this.y - other.y;
