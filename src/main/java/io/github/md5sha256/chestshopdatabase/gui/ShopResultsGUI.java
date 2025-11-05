@@ -84,10 +84,11 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
                         capacityToString(shop.estimatedCapacity())), NamedTextColor.YELLOW),
                 Component.text(String.format("Distance: %s",
                         distanceString(shop, queryPosition)), NamedTextColor.RED),
-                Component.text(String.format("Location: %d, %d, %d",
+                Component.text(String.format("Location: %d, %d, %d (%s)",
                         shop.posX(),
                         shop.posY(),
-                        shop.posZ()), NamedTextColor.RED)
+                        shop.posZ(),
+                        shop.regionName()), NamedTextColor.RED)
         ).map(ShopResultsGUI::formatLore).toList();
     }
 
