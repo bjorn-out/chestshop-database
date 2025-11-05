@@ -27,6 +27,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("com.acrobot.chestshop:chestshop:3.12.2")
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.3.16")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.14")
     implementation("org.mybatis:mybatis:3.5.19")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.6")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
