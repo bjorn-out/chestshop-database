@@ -29,6 +29,8 @@ public class FindState {
     private final EnumSet<ShopType> shopTypes = EnumSet.noneOf(ShopType.class);
     private final Map<ShopAttribute, ShopAttributeMeta> attributeMeta = new EnumMap<>(
             ShopAttribute.class);
+    private boolean hideEmptyShops = false;
+    private boolean hideFullShops = false;
     private final Map<ShopAttribute, Comparator<Shop>> comparators = new EnumMap<>(ShopAttribute.class);
     private final ChestshopItem item;
     private UUID world = null;
@@ -50,6 +52,8 @@ public class FindState {
         for (Map.Entry<ShopAttribute, ShopAttributeMeta> entry : other.attributeMeta.entrySet()) {
             this.attributeMeta.put(entry.getKey(), new ShopAttributeMeta(entry.getValue()));
         }
+        this.hideEmptyShops = other.hideEmptyShops;
+        this.hideFullShops = other.hideFullShops;
         this.comparators.putAll(other.comparators);
     }
 
@@ -116,6 +120,9 @@ public class FindState {
         }
     }
 
+    public void setHideEmptyShops(boolean hideEmptyShops) { this.hideEmptyShops = hideEmptyShops; }
+    public void setHideFullShops(boolean hideFullShops) {  this.hideFullShops = hideFullShops; }
+
     public void setSortPriority(@NotNull ShopAttribute shopAttribute, int priority) {
         ShopAttributeMeta meta = this.attributeMeta.get(shopAttribute);
         if (meta != null) {
@@ -147,7 +154,10 @@ public class FindState {
 
     @NotNull
     public Stream<Shop> applyToStream(@NotNull Stream<Shop> stream) {
-        return applyShopTypeFilter(applySortingCharacteristics(stream));
+        return applyShopTypeFilter(
+                applySortingCharacteristics(
+                        applyHideEmptyShops(
+                                applyHideFullShops(stream))));
     }
 
     @NotNull
@@ -180,4 +190,15 @@ public class FindState {
         return stream;
     }
 
+    @NotNull
+    protected Stream<Shop> applyHideEmptyShops(@NotNull Stream<Shop> stream) {
+        if (!this.hideEmptyShops) { return stream; }
+        return stream.filter(shop -> shop.stock() > 0);
+    }
+
+    @NotNull
+    protected Stream<Shop> applyHideFullShops(@NotNull Stream<Shop> stream) {
+        if (!this.hideFullShops) { return stream; }
+        return stream.filter(shop -> shop.estimatedCapacity() > 0);
+    }
 }
