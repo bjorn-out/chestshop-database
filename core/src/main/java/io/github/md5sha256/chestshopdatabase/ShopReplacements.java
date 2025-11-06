@@ -90,6 +90,6 @@ public class ShopReplacements {
                 .replacement("%x%", ShopReplacements::blockX)
                 .replacement("%y%", ShopReplacements::blockY)
                 .replacement("%z%", ShopReplacements::blockZ)
-                .replacement("%wolrd%", ShopReplacements::worldName);
+                .replacement("%world%", ShopReplacements::worldName);
     }
 }
