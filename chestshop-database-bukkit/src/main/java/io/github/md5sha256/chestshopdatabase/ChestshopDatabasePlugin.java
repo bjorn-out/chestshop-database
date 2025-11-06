@@ -50,6 +50,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     private Settings settings;
     private ShopResultsGUI gui;
     private ExecutorState executorState;
+    private ReplacementRegistry replacements = new ReplacementRegistry();
 
     @Override
     public void onLoad() {
@@ -67,12 +68,12 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         UnsafeChestShopSign.init();
-        getLogger().info("Plugin enabled");
+        ShopReplacements.registerDefaults(this.replacements);
         shopState = new ChestShopStateImpl(Duration.ofMinutes(5));
         discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer());
         BukkitScheduler scheduler = getServer().getScheduler();
         executorState = new ExecutorState(databaseExecutor, scheduler.getMainThreadExecutor(this));
-        gui = new ShopResultsGUI(this, settings);
+        gui = new ShopResultsGUI(this, settings, this.replacements);
         getServer().getPluginManager()
                 .registerEvents(new ChestShopListener(shopState, discoverer), this);
         SqlSessionFactory sessionFactory = MariaDatabase.buildSessionFactory(this.settings.databaseSettings());
@@ -80,6 +81,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         registerCommands(sessionFactory);
         scheduleTasks(sessionFactory);
         registerAdapters();
+        getLogger().info("Plugin enabled");
     }
 
     @Override

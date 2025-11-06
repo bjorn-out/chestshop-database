@@ -9,6 +9,7 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.component.PagingButtons;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
+import io.github.md5sha256.chestshopdatabase.ReplacementRegistry;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
@@ -23,35 +24,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings) {
+public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings, @NotNull
+                             ReplacementRegistry replacements) {
 
-    private static final NumberFormat PRICE_FORMAT = new DecimalFormat("$#.##");
-
-    private static String priceToString(Double price) {
-        return price == null ? "N/A" : PRICE_FORMAT.format(price);
-    }
-
-    private static String capacityToString(int cap) {
-        return cap == -1 ? "infinity" : String.valueOf(cap);
-    }
-
-    private static String distanceString(Shop shop, @Nullable BlockPosition queryPosition) {
-        if (queryPosition == null) return "∞";
-        long squaredDistance = shop.blockPosition().distanceSquared(queryPosition);
-        if (squaredDistance == Long.MAX_VALUE) return "∞";
-        return String.format("%d", (long) Math.floor(Math.sqrt(squaredDistance)));
-    }
-
-    private static Component resetItalics(@NotNull Component component) {
-        return component.decoration(TextDecoration.ITALIC, false);
-    }
 
     private static Component shopDisplayName(@NotNull Shop shop) {
         return Component.text()
@@ -62,32 +41,32 @@ public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings)
                 .build();
     }
 
+    private static String distanceString(Shop shop, @Nullable BlockPosition queryPosition) {
+        if (queryPosition == null) return "∞";
+        long squaredDistance = shop.blockPosition().distanceSquared(queryPosition);
+        if (squaredDistance == Long.MAX_VALUE) return "∞";
+        return String.format("%d", (long) Math.floor(Math.sqrt(squaredDistance)));
+    }
+
     private static Component formatLore(Component lore) {
         return lore.decoration(TextDecoration.ITALIC, false);
     }
 
     private List<Component> shopLore(@NotNull Shop shop,
                                      @Nullable BlockPosition queryPosition) {
+        ReplacementRegistry forked = this.replacements.fork()
+                .stringReplacement("%distance%", s -> distanceString(s, queryPosition));
         return Stream.of(
-                Component.text(String.format("Buy Price: %s, Sell Price: %s",
-                        priceToString(shop.buyPrice()),
-                        priceToString(shop.sellPrice())), NamedTextColor.AQUA),
-                Component.text(String.format("Unit Buy Price: %s, Unit Sell Price: %s",
-                        priceToString(shop.unitBuyPrice()),
-                        priceToString(shop.unitSellPrice())), NamedTextColor.AQUA),
-                Component.text(String.format("Quantity: %d", shop.quantity()),
-                        NamedTextColor.LIGHT_PURPLE),
-                Component.text(String.format("Stock: %d", shop.stock()),
-                        NamedTextColor.YELLOW),
-                Component.text(String.format("Remaining Capacity: %s",
-                        capacityToString(shop.estimatedCapacity())), NamedTextColor.YELLOW),
-                Component.text(String.format("Distance: %s",
-                        distanceString(shop, queryPosition)), NamedTextColor.RED),
-                Component.text(String.format("Location: %d, %d, %d",
-                        shop.posX(),
-                        shop.posY(),
-                        shop.posZ()), NamedTextColor.RED)
-        ).map(ShopResultsGUI::formatLore).toList();
+                Component.text("Buy Price: %buy-price%, Sell Price: %sell-price%", NamedTextColor.AQUA),
+                Component.text("Unit Buy Price: %buy-price-unit%, Unit Sell Price: %sell-price-unit%", NamedTextColor.AQUA),
+                Component.text("Quantity: %quantity%", NamedTextColor.LIGHT_PURPLE),
+                Component.text("Stock: %stock%", NamedTextColor.YELLOW),
+                Component.text("Remaining Capacity: %capacity%", NamedTextColor.YELLOW),
+                Component.text("Distance: %distance%", NamedTextColor.RED),
+                Component.text("Location: %x%, %y%, %z% (%world%)", NamedTextColor.RED)
+        )
+                .map(component -> forked.applyReplacements(shop, component))
+                .map(ShopResultsGUI::formatLore).toList();
     }
 
     private ItemStack shopToIcon(@NotNull Shop shop,
