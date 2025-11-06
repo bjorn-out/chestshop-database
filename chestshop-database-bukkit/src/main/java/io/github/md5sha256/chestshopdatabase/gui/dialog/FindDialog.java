@@ -130,7 +130,7 @@ public class FindDialog {
             submit(view, audience, findState, taskFactory, resultsGUI);
         }, ClickCallback.Options.builder().uses(1).build());
 
-        ActionButton submitButton = ActionButton.builder(Component.text("Search"))
+        ActionButton submitButton = ActionButton.builder(Component.text("Search", NamedTextColor.GREEN))
                 .action(submitAction)
                 .build();
         ActionButton exitButton = ActionButton.builder(Component.text("Exit"))
