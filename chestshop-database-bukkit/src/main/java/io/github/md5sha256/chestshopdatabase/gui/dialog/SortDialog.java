@@ -15,16 +15,16 @@ import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Supplier;
 
 public class SortDialog {
 
 
-    public static Dialog createSortDialog(@Nonnull FindState findState,
-                                          @Nonnull Supplier<Dialog> prevDialog) {
+    public static Dialog createSortDialog(@NotNull FindState findState,
+                                          @NotNull Supplier<Dialog> prevDialog) {
         var buttons = List.of(
                 ActionButton.builder(Component.text("Sorting Direction"))
                         .action(DialogUtil.openDialogAction(() -> createSortDirectionDialog(
@@ -47,8 +47,8 @@ public class SortDialog {
                         .build()));
     }
 
-    private static Dialog createSortDirectionDialog(@Nonnull FindState findState,
-                                                    @Nonnull Supplier<Dialog> prevDialog) {
+    private static Dialog createSortDirectionDialog(@NotNull FindState findState,
+                                                    @NotNull Supplier<Dialog> prevDialog) {
 
         var saveButton = ActionButton.builder(Component.text("Save"))
                 .action(DialogAction.customClick(applyShopAttributeSortDirections(findState,
@@ -68,8 +68,8 @@ public class SortDialog {
         );
     }
 
-    private static Dialog createSortPriorityDialog(@Nonnull FindState findState,
-                                                   @Nonnull Supplier<Dialog> prevDialog) {
+    private static Dialog createSortPriorityDialog(@NotNull FindState findState,
+                                                   @NotNull Supplier<Dialog> prevDialog) {
 
         var saveButton = ActionButton.builder(Component.text("Save"))
                 .action(DialogAction.customClick(applyShopAttributeSortPriority(findState,
@@ -90,7 +90,7 @@ public class SortDialog {
         );
     }
 
-    @Nonnull
+    @NotNull
     private static DialogBase sortingBase() {
         Component description = Component.text(
                 "Configure how shops should be sorted");
@@ -99,8 +99,8 @@ public class SortDialog {
                 .build();
     }
 
-    @Nonnull
-    private static DialogBase setSortingDirectionBase(@Nonnull List<ShopAttribute> attributes) {
+    @NotNull
+    private static DialogBase setSortingDirectionBase(@NotNull List<ShopAttribute> attributes) {
         var options = List.of(SingleOptionDialogInput.OptionEntry.create("ascending",
                         Component.text("Ascending", NamedTextColor.AQUA),
                         true),
@@ -122,7 +122,7 @@ public class SortDialog {
                 .build();
     }
 
-    private static DialogBase setPrioritiesBase(@Nonnull List<ShopAttribute> attributes) {
+    private static DialogBase setPrioritiesBase(@NotNull List<ShopAttribute> attributes) {
 
         var directions = attributes.stream().map(attribute ->
                 DialogInput.numberRange(attribute.name(),
@@ -138,9 +138,9 @@ public class SortDialog {
                 .build();
     }
 
-    @Nonnull
-    private static DialogActionCallback applyShopAttributeSortDirections(@Nonnull FindState findState,
-                                                                         @Nonnull Supplier<Dialog> prevDialog) {
+    @NotNull
+    private static DialogActionCallback applyShopAttributeSortDirections(@NotNull FindState findState,
+                                                                         @NotNull Supplier<Dialog> prevDialog) {
         return (view, audience) -> {
             for (ShopAttribute attribute : ShopAttribute.values()) {
                 String option = view.getText(attribute.name());
@@ -158,9 +158,9 @@ public class SortDialog {
         };
     }
 
-    @Nonnull
-    private static DialogActionCallback applyShopAttributeSortPriority(@Nonnull FindState findState,
-                                                                       @Nonnull Supplier<Dialog> prevDialog) {
+    @NotNull
+    private static DialogActionCallback applyShopAttributeSortPriority(@NotNull FindState findState,
+                                                                       @NotNull Supplier<Dialog> prevDialog) {
         return (view, audience) -> {
 
             for (ShopAttribute attribute : ShopAttribute.values()) {

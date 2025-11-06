@@ -4,17 +4,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 public interface CommandBean {
 
-    @Nonnull
+    @NotNull
     List<LiteralArgumentBuilder<CommandSourceStack>> commands();
 
     interface Single extends CommandBean {
 
-        @Nonnull
+        @NotNull
         LiteralArgumentBuilder<CommandSourceStack> command();
 
         @Override

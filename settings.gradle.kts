@@ -9,3 +9,5 @@ include(":core")
 
 // Main project
 include(":chestshop-database-bukkit")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

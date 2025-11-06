@@ -5,10 +5,9 @@ import io.github.md5sha256.chestshopdatabase.model.HydratedShop;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
-import org.apache.ibatis.annotations.Flush;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ public interface DatabaseMapper {
 
     void insertItem(String itemCode, byte[] itemBytes);
 
-    default void insertItems(@Nonnull List<ChestshopItem> items) {
+    default void insertItems(@NotNull List<ChestshopItem> items) {
         Map<String, byte[]> itemBytes = new HashMap<>();
         for (ChestshopItem item : items) {
             itemBytes.computeIfAbsent(item.itemCode(),
@@ -33,24 +32,24 @@ public interface DatabaseMapper {
         flushSession();
     }
 
-    @Nonnull
+    @NotNull
     List<String> selectItemCodes();
 
 
     void insertShop(
-            @Nonnull UUID worldUUID,
+            @NotNull UUID worldUUID,
             int x,
             int y,
             int z,
-            @Nonnull String itemCode,
-            @Nonnull String ownerName,
+            @NotNull String itemCode,
+            @NotNull String ownerName,
             @Nullable Double buyPrice,
             @Nullable Double sellPrice,
             int quantity,
             int stock,
             int estimatedCapacity);
 
-    default void insertShop(@Nonnull Shop shop) {
+    default void insertShop(@NotNull Shop shop) {
         insertShop(shop.worldId(),
                 shop.posX(),
                 shop.posY(),
@@ -65,7 +64,7 @@ public interface DatabaseMapper {
     }
 
 
-    default void insertShop(@Nonnull HydratedShop shop) {
+    default void insertShop(@NotNull HydratedShop shop) {
         insertShop(shop.worldId(),
                 shop.posX(),
                 shop.posY(),
@@ -79,7 +78,7 @@ public interface DatabaseMapper {
                 shop.estimatedCapacity());
     }
 
-    default void insertShops(@Nonnull List<HydratedShop> shops) {
+    default void insertShops(@NotNull List<HydratedShop> shops) {
         List<ChestshopItem> items = shops.stream().map(HydratedShop::item).toList();
         // make sure items exist before inserting shops...
         insertItems(items);
@@ -87,20 +86,19 @@ public interface DatabaseMapper {
         flushSession();
     }
 
-    void deleteShopByPos(@Nonnull UUID world, int x, int y, int z);
+    void deleteShopByPos(@NotNull UUID world, int x, int y, int z);
 
-    default void deleteShopByPos(@Nonnull BlockPosition position) {
+    default void deleteShopByPos(@NotNull BlockPosition position) {
         deleteShopByPos(position.world(), position.x(), position.y(), position.z());
     }
 
-    @Nonnull
-    List<Shop> selectShopsByShopTypeWorldItem(@Nonnull Set<ShopType> shopTypes,
+    @NotNull
+    List<Shop> selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                               @Nullable UUID world,
                                               @Nullable String itemCode);
 
-    @Nonnull
-    List<BlockPosition> selectShopsPositionsByWorld(@Nonnull UUID world);
+    @NotNull
+    List<BlockPosition> selectShopsPositionsByWorld(@NotNull UUID world);
 
-    @Flush
     void flushSession();
 }

@@ -1,20 +1,19 @@
 package io.github.md5sha256.chestshopdatabase.settings;
 
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Required;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
-
-import javax.annotation.Nonnull;
 
 @ConfigSerializable
 public record DatabaseSettings(
         @Setting("url")
         @Required
-        @Nonnull String url,
+        @NotNull String url,
         @Setting("username")
-        @Nonnull String username,
+        @NotNull String username,
         @Setting("password")
-        @Nonnull String password
+        @NotNull String password
 ) {
 
 }

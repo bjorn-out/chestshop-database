@@ -13,8 +13,8 @@ import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -23,8 +23,8 @@ import java.util.function.Supplier;
 
 public class FilterDialog {
 
-    @Nonnull
-    private static DialogBase createShopFiltersBase(@Nonnull Set<ShopType> includedTypes) {
+    @NotNull
+    private static DialogBase createShopFiltersBase(@NotNull Set<ShopType> includedTypes) {
         var options = List.of(SingleOptionDialogInput.OptionEntry.create("enabled",
                         Component.text("On", NamedTextColor.GREEN),
                         true),
@@ -44,9 +44,9 @@ public class FilterDialog {
                 .build();
     }
 
-    @Nonnull
-    public static Dialog createFiltersDialog(@Nonnull FindState state,
-                                             @Nonnull Supplier<Dialog> prevDialog) {
+    @NotNull
+    public static Dialog createFiltersDialog(@NotNull FindState state,
+                                             @NotNull Supplier<Dialog> prevDialog) {
         Set<ShopType> includedTypes = state.shopTypes();
         ActionButton saveButton = ActionButton.builder(Component.text("Save"))
                 .tooltip(Component.text("Save selection and return to previous menu"))
@@ -64,8 +64,8 @@ public class FilterDialog {
         );
     }
 
-    private static DialogActionCallback applyFilters(@Nonnull FindState findState,
-                                                     @Nonnull Supplier<Dialog> prevDialog) {
+    private static DialogActionCallback applyFilters(@NotNull FindState findState,
+                                                     @NotNull Supplier<Dialog> prevDialog) {
         return (view, audience) -> {
             Set<ShopType> included = EnumSet.noneOf(ShopType.class);
             for (ShopType shopType : ShopType.values()) {

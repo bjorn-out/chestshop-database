@@ -3,8 +3,8 @@ package io.github.md5sha256.chestshopdatabase.database;
 import io.github.md5sha256.chestshopdatabase.ExecutorState;
 import io.github.md5sha256.chestshopdatabase.gui.FindState;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -12,11 +12,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public record FindTaskFactory(@Nonnull Supplier<DatabaseSession> sessionSupplier,
-                              @Nonnull ExecutorState executorState) {
+public record FindTaskFactory(@NotNull Supplier<DatabaseSession> sessionSupplier,
+                              @NotNull ExecutorState executorState) {
 
     public CompletableFuture<List<Shop>> findTask(
-            @Nonnull FindState findState
+            @NotNull FindState findState
     ) {
         if (findState.shopTypes().isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptyList());

@@ -5,9 +5,9 @@ import com.google.common.cache.CacheBuilder;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
 import io.github.md5sha256.chestshopdatabase.model.HydratedShop;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class ChestShopState {
+public class ChestShopStateImpl implements ChestShopState {
 
     private final Cache<BlockPosition, Boolean> shopCache;
 
@@ -29,13 +29,14 @@ public class ChestShopState {
     private final Set<BlockPosition> deletedShops = new HashSet<>();
     private final Set<String> knownItemCodes = new HashSet<>();
 
-    public ChestShopState(@Nonnull Duration shopCacheDuration) {
+    public ChestShopStateImpl(@NotNull Duration shopCacheDuration) {
         this.shopCache = CacheBuilder.newBuilder()
                 .expireAfterAccess(shopCacheDuration)
                 .build();
     }
 
-    public void cacheItemCodes(@Nonnull Logger logger, @Nonnull DatabaseMapper database) {
+
+    public void cacheItemCodes(@NotNull Logger logger, @NotNull DatabaseMapper database) {
         try {
             this.knownItemCodes.addAll(database.selectItemCodes());
         } catch (Exception ex) {
@@ -43,12 +44,13 @@ public class ChestShopState {
         }
     }
 
-    public Set<String> itemCodes() {
+    @Override
+    public @NotNull Set<String> itemCodes() {
         return Collections.unmodifiableSet(this.knownItemCodes);
     }
 
-    @Nullable
-    public Consumer<DatabaseMapper> flushTask() {
+
+    public @Nullable Consumer<DatabaseMapper> flushTask() {
         List<HydratedShop> created = List.copyOf(this.createdShops.values());
         List<HydratedShop> updated = List.copyOf(this.updatedShops.values());
         List<HydratedShop> toInsert = new ArrayList<>(created.size() + updated.size());
@@ -68,11 +70,13 @@ public class ChestShopState {
         };
     }
 
-    public boolean cachedShopRegistered(@Nonnull BlockPosition position) {
+    @Override
+    public boolean cachedShopRegistered(@NotNull BlockPosition position) {
         return Objects.requireNonNullElse(this.shopCache.getIfPresent(position), Boolean.FALSE);
     }
 
-    public void queueShopCreation(@Nonnull HydratedShop shop) {
+    @Override
+    public void queueShopCreation(@NotNull HydratedShop shop) {
         BlockPosition position = shop.blockPosition();
         this.updatedShops.remove(position);
         this.deletedShops.remove(position);
@@ -81,7 +85,8 @@ public class ChestShopState {
         this.shopCache.put(position, Boolean.TRUE);
     }
 
-    public void queueShopUpdate(@Nonnull HydratedShop shop) {
+    @Override
+    public void queueShopUpdate(@NotNull HydratedShop shop) {
         BlockPosition position = shop.blockPosition();
         this.createdShops.remove(position);
         this.deletedShops.remove(position);
@@ -90,7 +95,8 @@ public class ChestShopState {
         this.knownItemCodes.add(shop.item().itemCode());
     }
 
-    public void queueShopDeletion(@Nonnull BlockPosition position) {
+    @Override
+    public void queueShopDeletion(@NotNull BlockPosition position) {
         this.createdShops.remove(position);
         this.updatedShops.remove(position);
         this.deletedShops.add(position);

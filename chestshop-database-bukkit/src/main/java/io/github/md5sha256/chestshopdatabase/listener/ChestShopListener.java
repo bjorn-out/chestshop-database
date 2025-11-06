@@ -19,16 +19,16 @@ import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public record ChestShopListener(
-        @Nonnull ChestShopState shopState,
-        @Nonnull ItemDiscoverer discoverer
+        @NotNull ChestShopState shopState,
+        @NotNull ItemDiscoverer discoverer
 ) implements Listener {
 
     private double toDouble(BigDecimal decimal) {
@@ -43,9 +43,9 @@ public record ChestShopListener(
         UnsafeChestShopSign.init();
     }
 
-    private void toHydratedShop(@Nonnull Sign sign,
-                                @Nonnull String[] lines,
-                                @Nonnull Container container,
+    private void toHydratedShop(@NotNull Sign sign,
+                                @NotNull String[] lines,
+                                @NotNull Container container,
                                 Consumer<HydratedShop> callback) {
         UUID world = sign.getWorld().getUID();
         int posX = sign.getX();

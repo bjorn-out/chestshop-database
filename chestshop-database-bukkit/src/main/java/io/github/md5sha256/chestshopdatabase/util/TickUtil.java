@@ -3,8 +3,8 @@ package io.github.md5sha256.chestshopdatabase.util;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,25 +18,25 @@ public class TickUtil<T> {
     private final Consumer<List<T>> handler;
     private BukkitTask task;
 
-    public TickUtil(int size, @Nonnull Consumer<List<T>> handler) {
+    public TickUtil(int size, @NotNull Consumer<List<T>> handler) {
         this.queue = new ArrayDeque<>(size);
         this.handler = handler;
     }
 
-    public TickUtil(@Nonnull Consumer<List<T>> handler) {
+    public TickUtil(@NotNull Consumer<List<T>> handler) {
         this.queue = new ArrayDeque<>();
         this.handler = handler;
     }
 
-    public void queueElement(@Nonnull T element) {
+    public void queueElement(@NotNull T element) {
         this.queue.addLast(element);
     }
 
-    public void queueElements(@Nonnull Collection<T> elements) {
+    public void queueElements(@NotNull Collection<T> elements) {
         this.queue.addAll(elements);
     }
 
-    @Nonnull
+    @NotNull
     public List<T> pollElements(int numElements) {
         if (this.queue.isEmpty()) {
             return Collections.emptyList();
@@ -54,8 +54,8 @@ public class TickUtil<T> {
     }
 
 
-    public void schedulePollTask(@Nonnull Plugin plugin,
-                                 @Nonnull BukkitScheduler scheduler,
+    public void schedulePollTask(@NotNull Plugin plugin,
+                                 @NotNull BukkitScheduler scheduler,
                                  int elementsPerTick,
                                  int intervalTicks) {
         if (this.task != null) {

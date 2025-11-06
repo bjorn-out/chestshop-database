@@ -9,12 +9,12 @@ import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import io.github.md5sha256.chestshopdatabase.util.InventoryUtil;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public record ChestShopDatabase(@Nonnull ChestShopState shopState) {
+public record ChestShopDatabase(@NotNull ChestShopState shopState) {
 
 
     private static double toDouble(BigDecimal decimal) {
@@ -24,11 +24,11 @@ public record ChestShopDatabase(@Nonnull ChestShopState shopState) {
     }
 
     public void registerShop(
-            @Nonnull BlockPosition position,
-            @Nonnull ItemStack itemStack,
-            @Nonnull String itemCode,
-            @Nonnull String[] lines,
-            @Nonnull Container container
+            @NotNull BlockPosition position,
+            @NotNull ItemStack itemStack,
+            @NotNull String itemCode,
+            @NotNull String[] lines,
+            @NotNull Container container
     ) {
         ChestshopItem item = new ChestshopItem(itemStack, itemCode);
         String ownerName = ChestShopSign.getOwner(lines);

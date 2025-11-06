@@ -1,6 +1,8 @@
 package io.github.md5sha256.chestshopdatabase;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.md5sha256.chestshopdatabase.adapters.fawe.FAWEHandler;
+import io.github.md5sha256.chestshopdatabase.adapters.worldedit.WorldEditHandler;
 import io.github.md5sha256.chestshopdatabase.command.CommandBean;
 import io.github.md5sha256.chestshopdatabase.command.FindCommand;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
@@ -10,7 +12,6 @@ import io.github.md5sha256.chestshopdatabase.database.MariaChestshopMapper;
 import io.github.md5sha256.chestshopdatabase.database.MariaDatabase;
 import io.github.md5sha256.chestshopdatabase.gui.ShopResultsGUI;
 import io.github.md5sha256.chestshopdatabase.listener.ChestShopListener;
-import io.github.md5sha256.chestshopdatabase.listener.WorldEditHandler;
 import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.UnsafeChestShopSign;
 import io.papermc.paper.command.brigadier.Commands;
@@ -21,11 +22,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.logging.Logger;
 public final class ChestshopDatabasePlugin extends JavaPlugin {
 
     private final ExecutorService databaseExecutor = Executors.newVirtualThreadPerTaskExecutor();
-    private ChestShopState shopState;
+    private ChestShopStateImpl shopState;
     private ItemDiscoverer discoverer;
     private Settings settings;
     private ShopResultsGUI gui;
@@ -67,7 +68,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         // Plugin startup logic
         UnsafeChestShopSign.init();
         getLogger().info("Plugin enabled");
-        shopState = new ChestShopState(Duration.ofMinutes(5));
+        shopState = new ChestShopStateImpl(Duration.ofMinutes(5));
         discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer());
         BukkitScheduler scheduler = getServer().getScheduler();
         executorState = new ExecutorState(databaseExecutor, scheduler.getMainThreadExecutor(this));
@@ -78,9 +79,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         cacheItemCodes(sessionFactory);
         registerCommands(sessionFactory);
         scheduleTasks(sessionFactory);
-        if (isWorldeditPresent()) {
-            new WorldEditHandler(this, this.shopState);
-        }
+        registerAdapters();
     }
 
     @Override
@@ -95,13 +94,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         getLogger().info("Plugin disabled");
     }
 
-    private boolean isWorldeditPresent() {
-        PluginManager pluginManager = getServer().getPluginManager();
-        return pluginManager.getPlugin("WorldEdit") != null
-                || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-    }
-
-    private void registerCommands(@Nonnull SqlSessionFactory sessionFactory) {
+    private void registerCommands(@NotNull SqlSessionFactory sessionFactory) {
         Supplier<DatabaseSession> sessionSupplier = () -> new DatabaseSession(sessionFactory,
                 MariaChestshopMapper.class);
         FindTaskFactory taskFactory = new FindTaskFactory(sessionSupplier, executorState);
@@ -127,14 +120,24 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         );
     }
 
-    private void cacheItemCodes(@Nonnull SqlSessionFactory sessionFactory) {
+    private void registerAdapters() {
+        PluginManager pluginManager = getServer().getPluginManager();
+        if (pluginManager.isPluginEnabled("WorldEdit")) {
+            new WorldEditHandler(this, this.shopState);
+        }
+        if (pluginManager.isPluginEnabled("FastAsyncWorldEdit")) {
+            new FAWEHandler(this, this.shopState);
+        }
+    }
+
+    private void cacheItemCodes(@NotNull SqlSessionFactory sessionFactory) {
         try (SqlSession session = sessionFactory.openSession()) {
             DatabaseMapper database = session.getMapper(MariaChestshopMapper.class);
             this.shopState.cacheItemCodes(getLogger(), database);
         }
     }
 
-    private void scheduleTasks(@Nonnull SqlSessionFactory sessionFactory) {
+    private void scheduleTasks(@NotNull SqlSessionFactory sessionFactory) {
         BukkitScheduler scheduler = getServer().getScheduler();
         Logger logger = getLogger();
         long interval = 1;
@@ -166,7 +169,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         }
     }
 
-    private ConfigurationNode copyDefaultsYaml(@Nonnull String resourceName) throws IOException {
+    private ConfigurationNode copyDefaultsYaml(@NotNull String resourceName) throws IOException {
         String fileName = resourceName + ".yml";
         File file = new File(getDataFolder(), fileName);
         if (!file.exists()) {

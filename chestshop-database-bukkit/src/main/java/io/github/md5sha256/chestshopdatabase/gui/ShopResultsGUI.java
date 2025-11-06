@@ -22,16 +22,15 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings) {
+public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings) {
 
     private static final NumberFormat PRICE_FORMAT = new DecimalFormat("$#.##");
 
@@ -50,11 +49,11 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
         return String.format("%d", (long) Math.floor(Math.sqrt(squaredDistance)));
     }
 
-    private static Component resetItalics(@Nonnull Component component) {
+    private static Component resetItalics(@NotNull Component component) {
         return component.decoration(TextDecoration.ITALIC, false);
     }
 
-    private static Component shopDisplayName(@Nonnull Shop shop) {
+    private static Component shopDisplayName(@NotNull Shop shop) {
         return Component.text()
                 .content(shop.ownerName())
                 .color(NamedTextColor.GREEN)
@@ -67,7 +66,7 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
         return lore.decoration(TextDecoration.ITALIC, false);
     }
 
-    private List<Component> shopLore(@Nonnull Shop shop,
+    private List<Component> shopLore(@NotNull Shop shop,
                                      @Nullable BlockPosition queryPosition) {
         return Stream.of(
                 Component.text(String.format("Buy Price: %s, Sell Price: %s",
@@ -91,7 +90,7 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
         ).map(ShopResultsGUI::formatLore).toList();
     }
 
-    private ItemStack shopToIcon(@Nonnull Shop shop,
+    private ItemStack shopToIcon(@NotNull Shop shop,
                                  @Nullable BlockPosition queryPosition) {
         Material material = switch (shop.shopType()) {
             case BOTH -> Material.ENDER_CHEST;
@@ -106,26 +105,26 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
         return itemStack;
     }
 
-    private GuiItem shopItemPreview(@Nonnull ItemStack item) {
+    private GuiItem shopItemPreview(@NotNull ItemStack item) {
         return new GuiItem(item, event -> event.setCancelled(true), this.plugin);
     }
 
-    public ChestGui createGui(@Nonnull Component title,
-                              @Nonnull List<Shop> shops,
-                              @Nonnull ItemStack shopItem,
+    public ChestGui createGui(@NotNull Component title,
+                              @NotNull List<Shop> shops,
+                              @NotNull ItemStack shopItem,
                               @Nullable BlockPosition queryPosition) {
         return createGui(title, shops, shopItem, queryPosition, null);
     }
 
-    @Nonnull
-    private String injectPlaceholders(@Nonnull String s, @Nonnull Shop shop) {
+    @NotNull
+    private String injectPlaceholders(@NotNull String s, @NotNull Shop shop) {
         BlockPosition pos = shop.blockPosition();
         return s.replace("<x>", String.valueOf(pos.x()))
                 .replace("<y>", String.valueOf(pos.y()))
                 .replace("<z>", String.valueOf(pos.z()));
     }
 
-    private GuiItem shopToGuiItem(@Nonnull Shop shop,
+    private GuiItem shopToGuiItem(@NotNull Shop shop,
                                   @Nullable BlockPosition queryPosition) {
         String clickCommand = settings().clickCommand();
         if (clickCommand == null || clickCommand.isEmpty()) {
@@ -144,9 +143,9 @@ public record ShopResultsGUI(@Nonnull Plugin plugin, @Nonnull Settings settings)
         }, this.plugin);
     }
 
-    public ChestGui createGui(@Nonnull Component title,
-                              @Nonnull List<Shop> shops,
-                              @Nonnull ItemStack shopItem,
+    public ChestGui createGui(@NotNull Component title,
+                              @NotNull List<Shop> shops,
+                              @NotNull ItemStack shopItem,
                               @Nullable BlockPosition queryPosition,
                               @Nullable Gui parent) {
         ChestGui gui = new ChestGui(6, ComponentHolder.of(title), this.plugin);

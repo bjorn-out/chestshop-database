@@ -1,15 +1,16 @@
 package io.github.md5sha256.chestshopdatabase.util;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 import java.util.UUID;
 
-public record BlockPosition(@Nonnull UUID world, int x, int y, int z) {
+public record BlockPosition(@NotNull UUID world, int x, int y, int z) {
     public BlockPosition {
         Objects.requireNonNull(world, "world cannot be null!");
     }
 
-    public long distanceSquared(@Nonnull BlockPosition other) {
+    public long distanceSquared(@NotNull BlockPosition other) {
         if (!this.world.equals(other.world)) {
             return Long.MAX_VALUE;
         }

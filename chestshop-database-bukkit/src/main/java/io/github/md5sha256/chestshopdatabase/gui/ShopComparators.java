@@ -3,9 +3,9 @@ package io.github.md5sha256.chestshopdatabase.gui;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.model.ShopAttribute;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -44,7 +44,7 @@ public class ShopComparators {
     }
 
 
-    @Nonnull
+    @NotNull
     public static Map<ShopAttribute, Comparator<Shop>> defaults() {
         return Collections.unmodifiableMap(DEFAULTS);
     }
@@ -64,14 +64,14 @@ public class ShopComparators {
         return this;
     }
 
-    @Nonnull
-    public ShopComparators withDistance(@Nonnull BlockPosition relativePosition) {
+    @NotNull
+    public ShopComparators withDistance(@NotNull BlockPosition relativePosition) {
         this.comparators.put(ShopAttribute.DISTANCE, Comparator.comparingLong(shop -> shop.blockPosition()
                         .distanceSquared(relativePosition)));
         return this;
     }
 
-    @Nonnull
+    @NotNull
     public Map<ShopAttribute, Comparator<Shop>> build() {
         return new EnumMap<>(this.comparators);
     }

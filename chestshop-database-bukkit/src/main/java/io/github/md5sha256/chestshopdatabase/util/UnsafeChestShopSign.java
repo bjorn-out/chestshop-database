@@ -2,8 +2,8 @@ package io.github.md5sha256.chestshopdatabase.util;
 
 import com.Acrobot.ChestShop.Configuration.Properties;
 import com.Acrobot.ChestShop.Signs.ChestShopSign;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +17,7 @@ public class UnsafeChestShopSign {
         PATTERN_PLAYER_NAME_WITH_ID = Pattern.compile("^(.+):[A-Za-z0-9]+$");
     }
 
-    public static boolean isValidChestShop(@Nonnull String[] lines) {
+    public static boolean isValidChestShop(@NotNull String[] lines) {
         if (!isValidPreparedSign(lines) || getOwner(lines).isEmpty()) {
             return false;
         }

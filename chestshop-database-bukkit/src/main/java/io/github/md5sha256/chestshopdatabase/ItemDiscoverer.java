@@ -10,9 +10,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +35,9 @@ public class ItemDiscoverer {
     private final Server server;
 
     public ItemDiscoverer(int bufferSize,
-                          @Nonnull Duration cacheTime,
+                          @NotNull Duration cacheTime,
                           int cacheSize,
-                          @Nonnull Server server) {
+                          @NotNull Server server) {
         this.server = server;
         this.itemCodes = new TickUtil<>(bufferSize, this::discoverItemStacks);
         this.itemStacks = new TickUtil<>(bufferSize, this::discoverItemCodes);
@@ -51,15 +51,15 @@ public class ItemDiscoverer {
                 .build();
     }
 
-    public void schedulePollTask(@Nonnull Plugin plugin,
-                                 @Nonnull BukkitScheduler scheduler,
+    public void schedulePollTask(@NotNull Plugin plugin,
+                                 @NotNull BukkitScheduler scheduler,
                                  int elementsPerTick,
                                  int intervalTicks) {
         this.itemCodes.schedulePollTask(plugin, scheduler, elementsPerTick, intervalTicks);
         this.itemStacks.schedulePollTask(plugin, scheduler, elementsPerTick, intervalTicks);
     }
 
-    private void discoverItemStacks(@Nonnull List<String> itemCodes) {
+    private void discoverItemStacks(@NotNull List<String> itemCodes) {
         PluginManager pluginManager = this.server.getPluginManager();
         for (String code : itemCodes) {
             this.queuedItemCodes.remove(code);
@@ -71,7 +71,7 @@ public class ItemDiscoverer {
     }
 
 
-    private void discoverItemCodes(@Nonnull List<ItemStack> stacks) {
+    private void discoverItemCodes(@NotNull List<ItemStack> stacks) {
         PluginManager pluginManager = this.server.getPluginManager();
         for (ItemStack item : stacks) {
             this.queuedItemStacks.remove(item);
@@ -103,8 +103,8 @@ public class ItemDiscoverer {
         }
     }
 
-    public void discoverItemStackFromCode(@Nonnull String code,
-                                          @Nonnull Consumer<ItemStack> callback) {
+    public void discoverItemStackFromCode(@NotNull String code,
+                                          @NotNull Consumer<ItemStack> callback) {
         ItemStack cached = this.cachedItemCodes.getIfPresent(code);
         if (cached != null) {
             callback.accept(cached);
@@ -116,8 +116,8 @@ public class ItemDiscoverer {
         this.itemCodeCallbacks.computeIfAbsent(code, unused -> new ArrayList<>()).add(callback);
     }
 
-    public void discoverCodeFromItemStack(@Nonnull ItemStack item,
-                                          @Nonnull Consumer<String> callback) {
+    public void discoverCodeFromItemStack(@NotNull ItemStack item,
+                                          @NotNull Consumer<String> callback) {
         String cached = this.cachedItemStacks.getIfPresent(item);
         if (cached != null) {
             callback.accept(cached);

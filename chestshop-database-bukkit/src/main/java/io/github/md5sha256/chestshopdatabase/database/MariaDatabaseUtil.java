@@ -4,15 +4,15 @@ import io.github.md5sha256.chestshopdatabase.database.util.ConditionBuilder;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.jdbc.SQL;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.UUID;
 
 public class MariaDatabaseUtil {
 
-    private static String getShopConditions(@Nonnull Set<ShopType> shopTypes) {
+    private static String getShopConditions(@NotNull Set<ShopType> shopTypes) {
         if (shopTypes.isEmpty()) {
             return "FALSE";
         }
@@ -34,8 +34,8 @@ public class MariaDatabaseUtil {
                 .toString();
     }
 
-    @Nonnull
-    public String selectShopsByShopTypeWorldItem(@Nonnull Set<ShopType> shopTypes,
+    @NotNull
+    public String selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                                  @Param("world_uuid") @Nullable UUID world,
                                                  @Param("item_code") @Nullable String itemCode) {
         return new SQL()
@@ -61,11 +61,11 @@ public class MariaDatabaseUtil {
                 .toString();
     }
 
-    @Nonnull
+    @NotNull
     public String selectShopsByShopTypeWorldItemDistance(
-            @Nonnull ShopType shopType,
-            @Param("world_uuid") @Nonnull UUID world,
-            @Param("item_code") @Nonnull String itemCode,
+            @NotNull ShopType shopType,
+            @Param("world_uuid") @NotNull UUID world,
+            @Param("item_code") @NotNull String itemCode,
             @Param("x") int x,
             @Param("y") int y,
             @Param("z") int z,

@@ -1,4 +1,4 @@
-package io.github.md5sha256.chestshopdatabase.listener;
+package io.github.md5sha256.chestshopdatabase.adapters.worldedit;
 
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;

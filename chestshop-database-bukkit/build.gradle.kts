@@ -4,7 +4,6 @@ plugins {
     id("com.gradleup.shadow") version "9.2.2"
 }
 
-group = "io.github.md5sha256"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -16,16 +15,22 @@ repositories {
         name = "minebench-repo"
         url = uri("https://repo.minebench.de/")
     }
-    maven {
-        name = "enginehub-repo"
-        url = uri("https://maven.enginehub.org/repo/")
-    }
 }
 
 dependencies {
     compileOnly(libs.paper)
     compileOnly("com.acrobot.chestshop:chestshop:3.12.2")
-    compileOnly(libs.worldeditCore)
+
+    // Internal projects
+    implementation(projects.core)
+    implementation(projects.adapters.worldedit) {
+        isTransitive = false
+    }
+    implementation(projects.adapters.fawe) {
+        isTransitive = false
+    }
+
+    // Libraries
     implementation("org.mybatis:mybatis:3.5.19")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.6")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
@@ -38,9 +43,6 @@ val targetJavaVersion = 21
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 
 tasks {
-    compileJava {
-        options.release.set(targetJavaVersion)
-    }
     processResources {
         filesMatching("paper-plugin.yml") {
             expand("version" to project.version)
@@ -54,6 +56,9 @@ tasks {
         relocate("org.yaml", "${base}.org.yaml")
         relocate("io.leangen.geantyref", "${base}.io.leangen.geantyref")
         relocate("com.github.stefvanschie", "${base}.com.github.stefvanschie")
+        relocate("org.apache.ibatis", "${base}.org.apache.ibatis")
+        relocate("org.jetbrains.annotations", "${base}.org.jetbrains.annotations")
+        relocate("org.intellij.lang", "${base}.org.intellij.lang")
     }
     runServer {
         // Configure the Minecraft version for our task.

@@ -1,6 +1,6 @@
 package io.github.md5sha256.chestshopdatabase.model;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public enum ShopAttribute {
     BUY_PRICE("Buy Price"),
@@ -14,7 +14,7 @@ public enum ShopAttribute {
 
     private final String displayName;
 
-    ShopAttribute(@Nonnull String displayName) {
+    ShopAttribute(@NotNull String displayName) {
         this.displayName = displayName;
     }
 

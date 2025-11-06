@@ -2,17 +2,17 @@ package io.github.md5sha256.chestshopdatabase.model;
 
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
-public record HydratedShop(
-        @Nonnull UUID worldId,
+public record Shop(
+        @NotNull UUID worldId,
         int posX,
         int posY,
         int posZ,
-        @Nonnull ChestshopItem item,
-        @Nonnull String ownerName,
+        @NotNull String itemCode,
+        @NotNull String ownerName,
         @Nullable Double buyPrice,
         @Nullable Double sellPrice,
         int quantity,
@@ -20,19 +20,15 @@ public record HydratedShop(
         int estimatedCapacity
 ) {
 
-    public HydratedShop {
+    public Shop {
         if (buyPrice == null && sellPrice == null) {
             throw new IllegalArgumentException("Shop cannot have both buyPrice and sellPrice be null!");
         }
     }
 
-    @Nonnull
+    @NotNull
     public BlockPosition blockPosition() {
         return new BlockPosition(this.worldId, this.posX, this.posY, this.posZ);
-    }
-
-    public int remainingCapacity() {
-        return this.estimatedCapacity == -1 ? -1 : this.estimatedCapacity - stock;
     }
 
     public ShopType shopType() {

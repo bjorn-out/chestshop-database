@@ -20,12 +20,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
-public record FindCommand(@Nonnull ChestShopState shopState,
-                          @Nonnull ItemDiscoverer discoverer,
-                          @Nonnull FindTaskFactory taskFactory,
-                          @Nonnull ShopResultsGUI gui) implements CommandBean.Single {
+public record FindCommand(@NotNull ChestShopState shopState,
+                          @NotNull ItemDiscoverer discoverer,
+                          @NotNull FindTaskFactory taskFactory,
+                          @NotNull ShopResultsGUI gui) implements CommandBean.Single {
 
 
     @Override
@@ -62,7 +60,7 @@ public record FindCommand(@Nonnull ChestShopState shopState,
                 );
     }
 
-    private void processCommandWithItem(@Nonnull Player player, @Nonnull ItemStack itemStack) {
+    private void processCommandWithItem(@NotNull Player player, @NotNull ItemStack itemStack) {
         var loc = player.getLocation();
         BlockPosition queryPosition = new BlockPosition(player.getWorld().getUID(),
                 loc.blockX(),
@@ -90,7 +88,7 @@ public record FindCommand(@Nonnull ChestShopState shopState,
     }
 
 
-    private void processCommandWithItemCode(@Nonnull Player player, @Nonnull String itemCode) {
+    private void processCommandWithItemCode(@NotNull Player player, @NotNull String itemCode) {
         var loc = player.getLocation();
         BlockPosition queryPosition = new BlockPosition(player.getWorld().getUID(),
                 loc.blockX(),

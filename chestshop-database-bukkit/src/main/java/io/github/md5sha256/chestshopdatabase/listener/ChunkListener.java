@@ -17,8 +17,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -30,17 +30,17 @@ public class ChunkListener implements Listener {
     private final ItemDiscoverer discoverer;
     private final ChestShopDatabase database;
 
-    public ChunkListener(@Nonnull Logger logger,
-                         @Nonnull Server server,
-                         @Nonnull ItemDiscoverer discoverer,
-                         @Nonnull ChestShopDatabase database) {
+    public ChunkListener(@NotNull Logger logger,
+                         @NotNull Server server,
+                         @NotNull ItemDiscoverer discoverer,
+                         @NotNull ChestShopDatabase database) {
         this.logger = logger;
         this.server = server;
         this.discoverer = discoverer;
         this.database = database;
     }
 
-    private String[] getSignLines(@Nonnull Sign sign) {
+    private String[] getSignLines(@NotNull Sign sign) {
         PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
         List<Component> components = sign.getSide(Side.FRONT).lines();
         String[] lines = new String[components.size()];

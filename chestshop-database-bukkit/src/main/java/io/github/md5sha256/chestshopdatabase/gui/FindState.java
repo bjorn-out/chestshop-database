@@ -6,9 +6,9 @@ import io.github.md5sha256.chestshopdatabase.model.ShopAttribute;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import io.github.md5sha256.chestshopdatabase.util.SortDirection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,14 +35,14 @@ public class FindState {
     private BlockPosition queryPosition = null;
 
     public FindState(
-            @Nonnull ChestshopItem item,
-            @Nonnull Map<ShopAttribute, Comparator<Shop>> comparators) {
+            @NotNull ChestshopItem item,
+            @NotNull Map<ShopAttribute, Comparator<Shop>> comparators) {
         this.item = item;
         this.comparators.putAll(comparators);
         reset();
     }
 
-    public FindState(@Nonnull FindState other) {
+    public FindState(@NotNull FindState other) {
         this.item = new ChestshopItem(other.item);
         this.world = other.world;
         this.queryPosition = other.queryPosition;
@@ -77,10 +77,10 @@ public class FindState {
         this.queryPosition = null;
     }
 
-    public void setWorld(@Nonnull UUID world) {
+    public void setWorld(@NotNull UUID world) {
         this.world = world;
     }
-    public void setQueryPosition(@Nonnull BlockPosition position) {
+    public void setQueryPosition(@NotNull BlockPosition position) {
         this.queryPosition = position;
     }
 
@@ -88,13 +88,14 @@ public class FindState {
     public Optional<UUID> world() {
         return Optional.ofNullable(this.world);
     }
+
     public @Nullable BlockPosition queryPosition() { return this.queryPosition; }
 
-    public ShopAttributeMeta getOrCreate(@Nonnull ShopAttribute attribute) {
+    public ShopAttributeMeta getOrCreate(@NotNull ShopAttribute attribute) {
         return this.attributeMeta.computeIfAbsent(attribute, ShopAttributeMeta::new);
     }
 
-    public void clearShopAttributeMeta(@Nonnull ShopAttribute attribute) {
+    public void clearShopAttributeMeta(@NotNull ShopAttribute attribute) {
         this.attributeMeta.remove(attribute);
     }
 
@@ -102,12 +103,12 @@ public class FindState {
         return Collections.unmodifiableSet(this.attributeMeta.keySet());
     }
 
-    public void setShopTypes(@Nonnull Collection<ShopType> shopTypes) {
+    public void setShopTypes(@NotNull Collection<ShopType> shopTypes) {
         this.shopTypes.clear();
         this.shopTypes.addAll(shopTypes);
     }
 
-    public void setSortDirection(@Nonnull ShopAttribute shopAttribute,
+    public void setSortDirection(@NotNull ShopAttribute shopAttribute,
                                  SortDirection sortDirection) {
         ShopAttributeMeta meta = this.attributeMeta.get(shopAttribute);
         if (meta != null) {
@@ -115,25 +116,25 @@ public class FindState {
         }
     }
 
-    public void setSortPriority(@Nonnull ShopAttribute shopAttribute, int priority) {
+    public void setSortPriority(@NotNull ShopAttribute shopAttribute, int priority) {
         ShopAttributeMeta meta = this.attributeMeta.get(shopAttribute);
         if (meta != null) {
             meta.weight(priority);
         }
     }
 
-    @Nonnull
+    @NotNull
     public Set<ShopType> shopTypes() {
         return Collections.unmodifiableSet(this.shopTypes);
     }
 
-    @Nonnull
+    @NotNull
     public Set<ShopAttribute> undeclaredAttributesForSorting() {
         return EnumSet.complementOf(EnumSet.copyOf(this.attributeMeta.keySet()));
     }
 
     @Nullable
-    private Comparator<Shop> toComparator(@Nonnull ShopAttributeMeta meta) {
+    private Comparator<Shop> toComparator(@NotNull ShopAttributeMeta meta) {
         Comparator<Shop> base = this.comparators.get(meta.attribute());
         if (base == null) {
             return null;
@@ -144,13 +145,13 @@ public class FindState {
         return base.reversed();
     }
 
-    @Nonnull
-    public Stream<Shop> applyToStream(@Nonnull Stream<Shop> stream) {
+    @NotNull
+    public Stream<Shop> applyToStream(@NotNull Stream<Shop> stream) {
         return applyShopTypeFilter(applySortingCharacteristics(stream));
     }
 
-    @Nonnull
-    protected Stream<Shop> applySortingCharacteristics(@Nonnull Stream<Shop> stream) {
+    @NotNull
+    protected Stream<Shop> applySortingCharacteristics(@NotNull Stream<Shop> stream) {
 
         Iterator<Comparator<Shop>> iterator = attributeMeta.values()
                 .stream()
@@ -169,8 +170,8 @@ public class FindState {
         return stream.sorted(comparator);
     }
 
-    @Nonnull
-    protected Stream<Shop> applyShopTypeFilter(@Nonnull Stream<Shop> stream) {
+    @NotNull
+    protected Stream<Shop> applyShopTypeFilter(@NotNull Stream<Shop> stream) {
         if (this.shopTypes.isEmpty()) {
             return Stream.empty();
         } else if (this.shopTypes.size() < NUM_SHOP_TYPES) {

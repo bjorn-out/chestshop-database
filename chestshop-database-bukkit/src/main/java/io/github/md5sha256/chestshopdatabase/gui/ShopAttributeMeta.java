@@ -2,8 +2,8 @@ package io.github.md5sha256.chestshopdatabase.gui;
 
 import io.github.md5sha256.chestshopdatabase.model.ShopAttribute;
 import io.github.md5sha256.chestshopdatabase.util.SortDirection;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public class ShopAttributeMeta {
@@ -12,16 +12,16 @@ public class ShopAttributeMeta {
     private SortDirection sortDirection;
     private int weight;
 
-    public ShopAttributeMeta(@Nonnull ShopAttribute attribute) {
+    public ShopAttributeMeta(@NotNull ShopAttribute attribute) {
         this(attribute, SortDirection.ASCENDING, 0);
     }
 
-    public ShopAttributeMeta(@Nonnull ShopAttributeMeta attribute) {
+    public ShopAttributeMeta(@NotNull ShopAttributeMeta attribute) {
         this(attribute.attribute, attribute.sortDirection, attribute.weight);
     }
 
-    public ShopAttributeMeta(@Nonnull ShopAttribute attribute,
-                             @Nonnull SortDirection sortDirection,
+    public ShopAttributeMeta(@NotNull ShopAttribute attribute,
+                             @NotNull SortDirection sortDirection,
                              int weight) {
         this.attribute = attribute;
         this.sortDirection = sortDirection;

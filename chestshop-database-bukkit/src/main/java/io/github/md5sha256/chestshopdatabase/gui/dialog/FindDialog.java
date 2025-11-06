@@ -18,14 +18,14 @@ import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class FindDialog {
 
-    @Nonnull
+    @NotNull
     private static DialogBase createMainPageBase(@Nullable ChestshopItem item) {
         if (item == null) {
             return DialogBase.builder(Component.text("Find ChestShops"))
@@ -58,11 +58,11 @@ public class FindDialog {
                 .build();
     }
 
-    @Nonnull
+    @NotNull
     public static Dialog createMainPageDialog(
-            @Nonnull FindState findState,
-            @Nonnull FindTaskFactory taskFactory,
-            @Nonnull ShopResultsGUI resultsGUI
+            @NotNull FindState findState,
+            @NotNull FindTaskFactory taskFactory,
+            @NotNull ShopResultsGUI resultsGUI
     ) {
         DialogAction submitAction = DialogAction.customClick((view, audience) -> {
             audience.showDialog(waitScreen());

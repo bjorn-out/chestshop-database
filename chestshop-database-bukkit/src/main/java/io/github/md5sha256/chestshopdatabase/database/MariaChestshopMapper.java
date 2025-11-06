@@ -9,9 +9,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +39,7 @@ public interface MariaChestshopMapper extends DatabaseMapper {
 
     @Override
     @Select("SELECT item_code FROM Item")
-    @Nonnull
+    @NotNull
     List<String> selectItemCodes();
 
     @Override
@@ -75,12 +75,12 @@ public interface MariaChestshopMapper extends DatabaseMapper {
                                     estimated_capacity = VALUES(estimated_capacity)
             """)
     void insertShop(
-            @Param("world_uuid") @Nonnull UUID worldUUID,
+            @Param("world_uuid") @NotNull UUID worldUUID,
             @Param("x") int x,
             @Param("y") int y,
             @Param("z") int z,
-            @Param("item_code") @Nonnull String itemCode,
-            @Param("owner_name") @Nonnull String ownerName,
+            @Param("item_code") @NotNull String itemCode,
+            @Param("owner_name") @NotNull String ownerName,
             @Param("buy_price") @Nullable Double buyPrice,
             @Param("sell_price") @Nullable Double sellPrice,
             @Param("quantity") int quantity,
@@ -93,15 +93,15 @@ public interface MariaChestshopMapper extends DatabaseMapper {
             WHERE world_uuid = CAST(#{world_uuid} AS UUID) AND pos_x = #{x} AND pos_y = #{y} AND pos_z = #{z}
             """)
     void deleteShopByPos(
-            @Param("world_uuid") @Nonnull UUID world,
+            @Param("world_uuid") @NotNull UUID world,
             @Param("x") int x,
             @Param("y") int y,
             @Param("z") int z);
 
     @Override
     @SelectProvider(type = MariaDatabaseUtil.class, method = "selectShopsByShopTypeWorldItem")
-    @Nonnull
-    List<Shop> selectShopsByShopTypeWorldItem(@Nonnull Set<ShopType> shopTypes,
+    @NotNull
+    List<Shop> selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                               @Param("world_uuid") @Nullable UUID world,
                                               @Param("item_code") @Nullable String itemCode);
 
@@ -115,6 +115,6 @@ public interface MariaChestshopMapper extends DatabaseMapper {
             WHERE
                 world_uuid = CAST(#{world_uuid} AS UUID)
             """)
-    @Nonnull
-    List<BlockPosition> selectShopsPositionsByWorld(@Nonnull @Param("world_uuid") UUID world);
+    @NotNull
+    List<BlockPosition> selectShopsPositionsByWorld(@NotNull @Param("world_uuid") UUID world);
 }

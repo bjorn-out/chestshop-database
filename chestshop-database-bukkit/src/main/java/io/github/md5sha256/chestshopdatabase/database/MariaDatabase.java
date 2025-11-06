@@ -8,8 +8,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.apache.ibatis.type.JdbcType;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.util.UUID;
 
@@ -23,7 +23,7 @@ public class MariaDatabase {
         }
     }
 
-    public static SqlSessionFactory buildSessionFactory(@Nonnull DatabaseSettings settings) {
+    public static SqlSessionFactory buildSessionFactory(@NotNull DatabaseSettings settings) {
         DataSource dataSource = new PooledDataSource("org.mariadb.jdbc.Driver", "jdbc:" + settings.url(), settings.username(), settings.password());
         Environment environment = new Environment("production", new JdbcTransactionFactory(), dataSource);
         Configuration configuration = new Configuration(environment);
