@@ -3,7 +3,13 @@ package io.github.md5sha256.chestshopdatabase.database;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Flush;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
