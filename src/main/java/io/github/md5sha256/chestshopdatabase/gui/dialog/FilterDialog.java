@@ -15,10 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class FilterDialog {
@@ -31,12 +28,22 @@ public class FilterDialog {
                 SingleOptionDialogInput.OptionEntry.create("disabled",
                         Component.text("Off", NamedTextColor.RED),
                         false));
-        List<? extends DialogInput> inputs = Arrays.stream(ShopType.values())
+        List<SingleOptionDialogInput> inputs = new ArrayList<>(Arrays.stream(ShopType.values())
                 .map(type -> DialogInput.singleOption(type.name(),
                                 Component.text(type.displayName()),
                                 options)
                         .build())
-                .toList();
+                .toList());
+
+        inputs.add(DialogInput.singleOption("show_empty",
+                        Component.text("Empty Shops"),
+                        options)
+                .build());
+
+        inputs.add(DialogInput.singleOption("show_full",
+                        Component.text("Full Shops"),
+                        options)
+                .build());
 
         return DialogBase.builder(Component.text("Select Shop Types"))
                 .canCloseWithEscape(true)
@@ -75,6 +82,8 @@ public class FilterDialog {
                 }
             }
             findState.setShopTypes(included);
+            findState.setShowEmpty(view.getText("show_empty").equals("enabled"));
+            findState.setShowFull(view.getText("show_full").equals("enabled"));
             audience.showDialog(prevDialog.get());
         };
     }

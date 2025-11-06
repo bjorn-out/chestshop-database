@@ -16,19 +16,17 @@ public class MariaDatabaseUtil {
         if (shopTypes.isEmpty()) {
             return "FALSE";
         }
-        boolean buyOnly = shopTypes.contains(ShopType.BUY);
-        boolean sellOnly = shopTypes.contains(ShopType.SELL);
-        boolean bothOnly = shopTypes.contains(ShopType.BOTH);
+        boolean buy = shopTypes.contains(ShopType.BUY);
+        boolean sell = shopTypes.contains(ShopType.SELL);
+        boolean both = shopTypes.contains(ShopType.BOTH);
         return new ConditionBuilder()
-                .applyIf(buyOnly,
+                .applyIf(buy,
                         cond -> cond.or(cond.newAnd("buy_price IS NOT NULL",
-                                "sell_price IS NULL",
-                                "stock > 0")))
-                .applyIf(sellOnly,
+                                "sell_price IS NULL")))
+                .applyIf(sell,
                         cond -> cond.or(cond.newAnd("sell_price IS NOT NULL",
-                                "buy_price IS NULL",
-                                "estimated_capacity > 0")))
-                .applyIf(bothOnly,
+                                "buy_price IS NULL")))
+                .applyIf(both,
                         cond -> cond.or(cond.newAnd("buy_price IS NOT NULL",
                                 "sell_price IS NOT NULL")))
                 .toString();

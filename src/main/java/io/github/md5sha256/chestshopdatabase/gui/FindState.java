@@ -27,6 +27,8 @@ public class FindState {
     private static final int NUM_SHOP_TYPES = ShopType.values().length;
 
     private final EnumSet<ShopType> shopTypes = EnumSet.noneOf(ShopType.class);
+    private boolean showEmpty = true;
+    private boolean showFull = true;
     private final Map<ShopAttribute, ShopAttributeMeta> attributeMeta = new EnumMap<>(
             ShopAttribute.class);
     private final Map<ShopAttribute, Comparator<Shop>> comparators = new EnumMap<>(ShopAttribute.class);
@@ -47,6 +49,8 @@ public class FindState {
         this.world = other.world;
         this.queryPosition = other.queryPosition;
         this.shopTypes.addAll(other.shopTypes);
+        this.showEmpty = other.showEmpty;
+        this.showFull = other.showFull;
         for (Map.Entry<ShopAttribute, ShopAttributeMeta> entry : other.attributeMeta.entrySet()) {
             this.attributeMeta.put(entry.getKey(), new ShopAttributeMeta(entry.getValue()));
         }
@@ -64,10 +68,14 @@ public class FindState {
     public void clear() {
         this.attributeMeta.clear();
         this.shopTypes.clear();
+        this.showEmpty = true;
+        this.showFull = true;
     }
 
     public void reset() {
         setShopTypes(EnumSet.allOf(ShopType.class));
+        this.showEmpty = true;
+        this.showFull = true;
         this.attributeMeta.clear();
         for (ShopAttribute attribute : ShopAttribute.values()) {
             this.attributeMeta.put(attribute,
@@ -107,6 +115,9 @@ public class FindState {
         this.shopTypes.addAll(shopTypes);
     }
 
+    public void setShowEmpty(boolean showEmpty) { this.showEmpty = showEmpty; }
+    public void setShowFull(boolean showFull) { this.showFull = showFull; }
+
     public void setSortDirection(@Nonnull ShopAttribute shopAttribute,
                                  SortDirection sortDirection) {
         ShopAttributeMeta meta = this.attributeMeta.get(shopAttribute);
@@ -127,6 +138,9 @@ public class FindState {
         return Collections.unmodifiableSet(this.shopTypes);
     }
 
+    public boolean showEmpty() { return this.showEmpty; }
+    public boolean showFull() { return this.showFull; }
+
     @Nonnull
     public Set<ShopAttribute> undeclaredAttributesForSorting() {
         return EnumSet.complementOf(EnumSet.copyOf(this.attributeMeta.keySet()));
@@ -146,7 +160,10 @@ public class FindState {
 
     @Nonnull
     public Stream<Shop> applyToStream(@Nonnull Stream<Shop> stream) {
-        return applyShopTypeFilter(applySortingCharacteristics(stream));
+        return applyShopTypeFilter(
+                applySortingCharacteristics(
+                        applyEmptyFilter(
+                                applyFullFilter(stream))));
     }
 
     @Nonnull
@@ -179,4 +196,19 @@ public class FindState {
         return stream;
     }
 
+    @Nonnull
+    protected Stream<Shop> applyEmptyFilter(@Nonnull Stream<Shop> stream) {
+        if (this.showEmpty) {
+            return stream;
+        }
+        return stream.filter(shop -> shop.stock() > 0);
+    }
+
+    @Nonnull
+    protected Stream<Shop> applyFullFilter(@Nonnull Stream<Shop> stream) {
+        if (this.showFull) {
+            return stream;
+        }
+        return stream.filter(shop -> shop.estimatedCapacity() > 0);
+    }
 }
