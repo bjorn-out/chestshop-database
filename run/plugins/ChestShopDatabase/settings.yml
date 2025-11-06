@@ -1,0 +1,6 @@
+database-settings:
+  url: 'mariadb://localhost:3306/Chest'
+  username: 'root'
+  password: 'Vennefly123'
+
+result-gui-click-command: ''

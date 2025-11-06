@@ -112,7 +112,7 @@ gradle-app.setting
 **/build/
 
 # Common working directory
-run/
+chestshop-database-bukkit/run/
 runs/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
