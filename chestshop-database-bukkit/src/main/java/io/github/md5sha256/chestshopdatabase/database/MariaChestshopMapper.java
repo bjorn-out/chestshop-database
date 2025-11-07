@@ -4,6 +4,7 @@ import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Flush;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -117,4 +118,8 @@ public interface MariaChestshopMapper extends DatabaseMapper {
             """)
     @NotNull
     List<BlockPosition> selectShopsPositionsByWorld(@NotNull @Param("world_uuid") UUID world);
+
+    @Override
+    @Flush
+    void flushSession();
 }
