@@ -152,7 +152,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
             if (flushTask == null) {
                 return;
             }
-            logger.info("Beginning flush task...");
+            logger.fine("Beginning flush task...");
             CompletableFuture.runAsync(() -> {
                 try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
                     DatabaseMapper databaseMapper = session.getMapper(MariaChestshopMapper.class);
@@ -162,7 +162,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
                     logger.severe("Failed to flush shop state to database!");
                     ex.printStackTrace();
                 }
-                logger.info("Flush task complete!");
+                logger.fine("Flush task complete!");
             });
         }, interval, interval);
         this.discoverer.schedulePollTask(this, scheduler, 20, 5);
