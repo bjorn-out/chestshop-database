@@ -122,7 +122,7 @@ public interface MariaChestshopMapper extends DatabaseMapper {
 
     @Override
     @Update("""
-            UPDATE
+            UPDATE Shop
             SET
                 stock = #{stock},
                 estimated_capacity = #{estimated_capacity}
