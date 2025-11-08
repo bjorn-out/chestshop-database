@@ -57,7 +57,7 @@ public class ChestShopStateImpl implements ChestShopState {
         toInsert.addAll(created);
         List<ShopStockUpdate> toUpdate = List.copyOf(this.updatedShops);
         List<BlockPosition> deleted = List.copyOf(this.deletedShops);
-        if (deleted.isEmpty() && toInsert.isEmpty()) {
+        if (deleted.isEmpty() && toInsert.isEmpty() && toUpdate.isEmpty()) {
             return null;
         }
         this.createdShops.clear();
