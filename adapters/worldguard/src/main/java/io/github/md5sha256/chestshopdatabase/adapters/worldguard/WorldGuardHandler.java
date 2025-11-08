@@ -45,8 +45,8 @@ public class WorldGuardHandler {
             if (regionManager == null) return "N/A";
             // Get regions set
             ApplicableRegionSet regions = regionManager.getApplicableRegions(BukkitAdapter.adapt(new Location(world, shop.posX(), shop.posY(), shop.posZ())).toVector().toBlockPoint());
-            Optional<ProtectedRegion> firstRegionInPriority = regions.getRegions().stream().min(Comparator.comparingInt(ProtectedRegion::getPriority));
-            return firstRegionInPriority.isPresent() ? firstRegionInPriority.get().getId() : "N/A";
+            Optional<String> firstRegionInPriority = regions.getRegions().stream().min(Comparator.comparingInt(ProtectedRegion::getPriority)).map(ProtectedRegion::getId);
+            return firstRegionInPriority.orElse("N/A");
         });
     }
 }
