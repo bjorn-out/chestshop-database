@@ -101,7 +101,11 @@ public interface DatabaseMapper {
     @NotNull
     List<BlockPosition> selectShopsPositionsByWorld(@NotNull UUID world);
 
-    void updateShop (@NotNull ShopStockUpdate stockUpdate);
+    void updateShop (@NotNull UUID world, int x, int y, int z, int stock, int estimatedCapacity);
+
+    default void updateShop (@NotNull ShopStockUpdate stockUpdate) {
+        updateShop(stockUpdate.worldUUID(), stockUpdate.x(), stockUpdate.y(), stockUpdate.z(), stockUpdate.stock(), stockUpdate.estimatedCapacity());
+    }
 
     default void updateShops (@NotNull List<ShopStockUpdate> stockUpdates) {
         stockUpdates.forEach(this::updateShop);
