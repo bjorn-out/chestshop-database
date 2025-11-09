@@ -87,8 +87,12 @@ public class FilterDialog {
                 }
             }
             findState.setShopTypes(included);
-            findState.setHideEmptyShops(view.getText("show_empty").equals("disabled"));
-            findState.setHideFullShops(view.getText("show_full").equals("disabled"));
+
+            String show_empty = view.getText("show_empty");
+            String show_full = view.getText("show_full");
+            if (show_empty != null) { findState.setHideEmptyShops(show_empty.equals("disabled")); }
+            if (show_full != null) { findState.setHideFullShops(show_full.equals("disabled")); }
+
             audience.showDialog(prevDialog.get());
         };
     }
