@@ -68,6 +68,7 @@ public class ChestShopStateImpl implements ChestShopState {
         this.updatedShops.clear();
         this.deletedShops.clear();
         return (database) -> {
+            System.out.println("flushing!");
             try {
                 deleted.forEach(database::deleteShopByPos);
                 database.insertShops(toInsert);

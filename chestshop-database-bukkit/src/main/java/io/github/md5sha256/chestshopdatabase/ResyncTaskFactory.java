@@ -12,6 +12,7 @@ import io.github.md5sha256.chestshopdatabase.util.InventoryUtil;
 import io.github.md5sha256.chestshopdatabase.util.TickUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Server;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -20,7 +21,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,6 +81,7 @@ public class ResyncTaskFactory {
         this.discoverer.discoverItemStackFromCode(itemCode, itemStack -> {
             if (itemStack == null || itemStack.isEmpty()) {
                 // FIXME log warning
+                future.complete(callback.apply(null));
                 return;
             }
             ShopStockUpdate shopStockUpdate = new ShopStockUpdate(
@@ -98,19 +99,36 @@ public class ResyncTaskFactory {
 
     private CompletableFuture<Void> processBlockPosition(@NotNull Chunk chunk,
                                                          @NotNull BlockPosition pos) {
-        Block block = chunk.getBlock(pos.xChunk(), pos.y(), pos.zChunk());
-        BlockState blockState = block.getState(false);
-        if (blockState instanceof Sign sign) {
-            Container container = uBlock.findConnectedContainer(sign);
-            if (container != null) {
-                return toUpdateShopStock(sign,
-                        sign.getLines(),
-                        container,
-                        this.chestShopState::queueShopUpdate)
-                        .thenCompose(Function.identity());
+        try {
+            Block block = chunk.getBlock(pos.xChunk(), pos.y(), pos.zChunk());
+            if (!Tag.SIGNS.isTagged(block.getType())) {
+                System.out.println("invalid block");
+                return CompletableFuture.completedFuture(null);
             }
+            BlockState blockState = block.getState(false);
+            if (blockState instanceof Sign sign) {
+                Container container = uBlock.findConnectedContainer(sign);
+                if (container != null) {
+                    return toUpdateShopStock(sign,
+                            sign.getLines(),
+                            container,
+                            update -> {
+                                if (update != null) {
+                                    return this.chestShopState.queueShopUpdate(update);
+                                }
+                                return CompletableFuture.<Void>completedFuture(null);
+                            })
+                            .thenCompose(Function.identity());
+                } else {
+                    // Don't do anything...?
+                    return CompletableFuture.completedFuture(null);
+                }
+            }
+            return chestShopState.queueShopDeletion(pos);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return chestShopState.queueShopDeletion(pos);
+        return CompletableFuture.completedFuture(null);
     }
 
 
@@ -137,7 +155,13 @@ public class ResyncTaskFactory {
                 continue;
             }
             world.getChunkAtAsync(chunkPosition.chunkX(), chunkPosition.chunkZ(), false)
-                    .thenAccept(chunk -> processChunk(chunk, blocks, progress));
+                    .thenAccept(chunk -> {
+                        if (chunk != null) {
+                            processChunk(chunk, blocks, progress);
+                        } else {
+                            progress.markCompleted(blocks.size());
+                        }
+                    });
         }
     }
 
@@ -163,12 +187,12 @@ public class ResyncTaskFactory {
             TaskProgress progress = new TaskProgress(numBlocks);
             future.complete(progress);
             TickUtil<Bucket> tickUtil = new TickUtil<>(list -> processBuckets(buckets, progress));
-            progress.setOnComplete(tickUtil::cancelPollTask);
             tickUtil.queueElements(buckets);
             tickUtil.schedulePollTask(this.plugin,
                     this.scheduler,
                     chunksPerInterval,
                     intervalTicks);
+            progress.chainOnComplete(tickUtil::cancelPollTask);
         });
         return future;
     }
