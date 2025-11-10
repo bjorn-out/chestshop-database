@@ -31,6 +31,6 @@ public record BlockPosition(@NotNull UUID world, int x, int y, int z) {
 
     @NotNull
     public ChunkPosition chunkPosition() {
-        return new ChunkPosition(this.world, this.x << 4, this.z << 4);
+        return new ChunkPosition(this.world, this.x >> 4, this.z >> 4);
     }
 }
