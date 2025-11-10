@@ -63,15 +63,15 @@ public class ResyncTaskFactory {
         this.scheduler = plugin.getServer().getScheduler();
     }
 
-    private static List<Bucket> toBuckets(@NotNull List<BlockPosition> positions) {
+    private static List<Bucket<ChunkPosition>> toBuckets(@NotNull List<BlockPosition> positions) {
         Map<ChunkPosition, List<BlockPosition>> map = new HashMap<>();
         for (BlockPosition position : positions) {
             map.computeIfAbsent(position.chunkPosition(), unused -> new ArrayList<>())
                     .add(position);
         }
-        List<Bucket> buckets = new ArrayList<>(map.size());
+        List<Bucket<ChunkPosition>> buckets = new ArrayList<>(map.size());
         for (Map.Entry<ChunkPosition, List<BlockPosition>> entry : map.entrySet()) {
-            buckets.add(new Bucket(entry.getKey(), entry.getValue()));
+            buckets.add(new Bucket<>(entry.getKey(), entry.getValue()));
         }
         return buckets;
     }
@@ -149,13 +149,21 @@ public class ResyncTaskFactory {
     }
 
 
+    private void processChunks(@NotNull List<Bucket<Chunk>> buckets,
+                               @NotNull TaskProgress progress) {
+        for (Bucket<Chunk> bucket : buckets) {
+            processChunk(bucket.chunk(), bucket.blocks(), progress);
+        }
+    }
+
     private void processChunk(@NotNull Chunk chunk,
                               @NotNull List<BlockPosition> blocks,
                               @NotNull TaskProgress progress) {
         UUID world = chunk.getWorld().getUID();
         Set<BlockPosition> known = new HashSet<>(blocks);
         Set<BlockPosition> knownProcessed = new HashSet<>(known.size());
-        for (BlockState state : chunk.getTileEntities(block -> Tag.SIGNS.isTagged(block.getType()), false)) {
+        for (BlockState state : chunk.getTileEntities(block -> Tag.SIGNS.isTagged(block.getType()),
+                false)) {
             Sign sign = (Sign) state;
             BlockPosition position = new BlockPosition(world,
                     sign.getX(),
@@ -194,10 +202,12 @@ public class ResyncTaskFactory {
     }
 
 
-    private void processBuckets(@NotNull List<Bucket> buckets, @NotNull TaskProgress progress) {
+    private void processBuckets(@NotNull List<Bucket<ChunkPosition>> buckets,
+                                @NotNull TaskProgress progress,
+                                @NotNull TickUtil<Bucket<Chunk>> chunkProcessor) {
         Server server = this.plugin.getServer();
-        for (Bucket bucket : buckets) {
-            ChunkPosition chunkPosition = bucket.chunkPos();
+        for (Bucket<ChunkPosition> bucket : buckets) {
+            ChunkPosition chunkPosition = bucket.chunk();
             World world = server.getWorld(chunkPosition.worldId());
             List<BlockPosition> blocks = bucket.blocks();
             if (world == null) {
@@ -207,7 +217,7 @@ public class ResyncTaskFactory {
             world.getChunkAtAsync(chunkPosition.chunkX(), chunkPosition.chunkZ(), false)
                     .thenAccept(chunk -> {
                         if (chunk != null) {
-                            processChunk(chunk, blocks, progress);
+                            chunkProcessor.queueElement(new Bucket<>(chunk, blocks));
                         } else {
                             progress.markCompleted(blocks.size());
                         }
@@ -219,7 +229,7 @@ public class ResyncTaskFactory {
     public CompletableFuture<TaskProgress> triggerResync(int chunksPerInterval, int intervalTicks) {
         CompletableFuture<TaskProgress> future = new CompletableFuture<>();
         this.executorState.dbExec().submit(() -> {
-            List<Bucket> buckets;
+            List<Bucket<ChunkPosition>> buckets;
             int numBlocks;
             try (DatabaseSession session = sessionSupplier.get()) {
                 DatabaseMapper mapper = session.mapper();
@@ -233,18 +243,27 @@ public class ResyncTaskFactory {
 
             TaskProgress progress = new TaskProgress(numBlocks);
             future.complete(progress);
-            TickUtil<Bucket> tickUtil = new TickUtil<>(list -> processBuckets(buckets, progress));
-            tickUtil.queueElements(buckets);
-            tickUtil.schedulePollTask(this.plugin,
+
+            TickUtil<Bucket<Chunk>> processUtil = new TickUtil<>(list -> processChunks(list,
+                    progress));
+            TickUtil<Bucket<ChunkPosition>> loadUtil = new TickUtil<>(list -> processBuckets(list,
+                    progress,
+                    processUtil));
+            loadUtil.queueElements(buckets);
+            loadUtil.schedulePollTask(this.plugin,
                     this.scheduler,
                     chunksPerInterval,
                     intervalTicks);
-            progress.chainOnComplete(tickUtil::cancelPollTask);
+            processUtil.schedulePollTask(this.plugin, this.scheduler, chunksPerInterval, intervalTicks);
+            progress.chainOnComplete(() -> {
+                loadUtil.cancelPollTask();
+                processUtil.cancelPollTask();
+            });
         });
         return future;
     }
 
-    private record Bucket(@NotNull ChunkPosition chunkPos, @NotNull List<BlockPosition> blocks) {
+    private record Bucket<T>(@NotNull T chunk, @NotNull List<BlockPosition> blocks) {
     }
 
 }
