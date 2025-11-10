@@ -36,7 +36,7 @@ public record ResyncCommand(
                                     NamedTextColor.GREEN));
                             int chunksPerInterval = ctx.getArgument("chunksPerTick", Integer.class);
                             taskFactory.triggerResync(chunksPerInterval, 1).thenAccept(progress -> {
-                                int ticks = Tick.tick().fromDuration(Duration.ofSeconds(5));
+                                int ticks = Tick.tick().fromDuration(Duration.ofSeconds(30));
                                 BukkitTask bukkitTask = scheduler.runTaskTimer(plugin, () -> {
                                     sender.sendMessage(Component.text(formatProgress(progress),
                                             NamedTextColor.AQUA));
