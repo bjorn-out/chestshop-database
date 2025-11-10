@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public class ItemDiscoverer {
 
@@ -33,11 +34,13 @@ public class ItemDiscoverer {
     private final Map<String, List<Consumer<ItemStack>>> itemCodeCallbacks = new HashMap<>();
     private final Map<ItemStack, List<Consumer<String>>> itemStackCallbacks = new HashMap<>();
     private final Server server;
+    private final Logger logger;
 
     public ItemDiscoverer(int bufferSize,
                           @NotNull Duration cacheTime,
                           int cacheSize,
-                          @NotNull Server server) {
+                          @NotNull Server server,
+                          @NotNull Logger logger) {
         this.server = server;
         this.itemCodes = new TickUtil<>(bufferSize, this::discoverItemStacks);
         this.itemStacks = new TickUtil<>(bufferSize, this::discoverItemCodes);
@@ -49,6 +52,7 @@ public class ItemDiscoverer {
                 .expireAfterAccess(cacheTime)
                 .initialCapacity(cacheSize)
                 .build();
+        this.logger = logger;
     }
 
     public void schedulePollTask(@NotNull Plugin plugin,
@@ -63,9 +67,15 @@ public class ItemDiscoverer {
         PluginManager pluginManager = this.server.getPluginManager();
         for (String code : itemCodes) {
             this.queuedItemCodes.remove(code);
-            ItemParseEvent parseEvent = new ItemParseEvent(code);
-            pluginManager.callEvent(parseEvent);
-            ItemStack itemStack = parseEvent.getItem();
+            ItemStack itemStack = null;
+            try {
+                ItemParseEvent parseEvent = new ItemParseEvent(code);
+                pluginManager.callEvent(parseEvent);
+                itemStack = parseEvent.getItem();
+            } catch (Throwable ex) {
+                this.logger.warning("Failed to lookup item stack from item code!");
+                ex.printStackTrace();
+            }
             markDiscovery(code, itemStack);
         }
     }
@@ -75,9 +85,15 @@ public class ItemDiscoverer {
         PluginManager pluginManager = this.server.getPluginManager();
         for (ItemStack item : stacks) {
             this.queuedItemStacks.remove(item);
-            ItemStringQueryEvent parseEvent = new ItemStringQueryEvent(item);
-            pluginManager.callEvent(parseEvent);
-            String itemCode = parseEvent.getItemString();
+            String itemCode = null;
+            try {
+                ItemStringQueryEvent parseEvent = new ItemStringQueryEvent(item);
+                pluginManager.callEvent(parseEvent);
+                itemCode = parseEvent.getItemString();
+            } catch (Throwable ex) {
+                this.logger.warning("Failed to lookup item code from item stack!");
+                ex.printStackTrace();
+            }
             markDiscovery(itemCode, item);
         }
     }
