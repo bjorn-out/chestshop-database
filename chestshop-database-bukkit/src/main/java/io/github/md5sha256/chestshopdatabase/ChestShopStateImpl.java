@@ -79,7 +79,6 @@ public class ChestShopStateImpl implements ChestShopState {
     @Override
     public void queueShopCreation(@NotNull HydratedShop shop) {
         BlockPosition position = shop.blockPosition();
-        this.updatedShops.remove(position);
         this.deletedShops.remove(position);
         this.createdShops.put(position, shop);
         this.knownItemCodes.add(shop.item().itemCode());
@@ -94,7 +93,6 @@ public class ChestShopStateImpl implements ChestShopState {
     @Override
     public void queueShopDeletion(@NotNull BlockPosition position) {
         this.createdShops.remove(position);
-        this.updatedShops.remove(position);
         this.deletedShops.add(position);
         this.shopCache.invalidate(position);
     }
