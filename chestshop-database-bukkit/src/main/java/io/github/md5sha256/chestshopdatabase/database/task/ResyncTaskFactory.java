@@ -169,16 +169,17 @@ public class ResyncTaskFactory {
                     sign.getX(),
                     sign.getY(),
                     sign.getZ());
+            String[] lines = sign.getLines();
+            if (!ChestShopSign.isValid(lines)) {
+                continue;
+            }
             Container container = uBlock.findConnectedContainer(sign);
             if (container == null) {
-                if (known.contains(position)) {
-                    knownProcessed.add(position);
-                }
                 continue;
             }
 
             if (known.contains(position)) {
-                toUpdateShopStock(sign, sign.getLines(), container, update -> {
+                toUpdateShopStock(sign, lines, container, update -> {
                     if (update != null) {
                         return this.chestShopState.queueShopUpdate(update);
                     }
@@ -187,7 +188,7 @@ public class ResyncTaskFactory {
                 knownProcessed.add(position);
             } else {
                 progress.incrementTotal();
-                toHydratedShop(sign, sign.getLines(), container, shop -> {
+                toHydratedShop(sign, lines, container, shop -> {
                     if (shop != null) {
                         return this.chestShopState.queueShopCreation(shop);
                     }
@@ -211,7 +212,9 @@ public class ResyncTaskFactory {
             World world = server.getWorld(chunkPosition.worldId());
             List<BlockPosition> blocks = bucket.blocks();
             if (world == null) {
-                blocks.forEach(chestShopState::queueShopDeletion);
+                for (BlockPosition position : blocks) {
+                    chestShopState.queueShopDeletion(position).thenRun(progress::markCompleted);
+                }
                 continue;
             }
             world.getChunkAtAsync(chunkPosition.chunkX(), chunkPosition.chunkZ(), false)

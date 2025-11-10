@@ -73,7 +73,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         UnsafeChestShopSign.init();
         ShopReplacements.registerDefaults(this.replacements);
         shopState = new ChestShopStateImpl(Duration.ofMinutes(5));
-        discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer());
+        discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer(), getLogger());
         BukkitScheduler scheduler = getServer().getScheduler();
         executorState = new ExecutorState(databaseExecutor, scheduler.getMainThreadExecutor(this));
         gui = new ShopResultsGUI(this, settings, this.replacements);
