@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class ResyncTask {
+public class ResyncTaskFactory {
 
     private final ChestShopState chestShopState;
     private final ItemDiscoverer discoverer;
@@ -40,7 +40,7 @@ public class ResyncTask {
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
 
-    public ResyncTask(
+    public ResyncTaskFactory(
             @NotNull ChestShopState chestShopState,
             @NotNull ItemDiscoverer discoverer,
             @NotNull Supplier<DatabaseSession> sessionSupplier,
@@ -144,16 +144,9 @@ public class ResyncTask {
     @NotNull
     public CompletableFuture<TaskProgress> triggerResync(
             int chunksPerInterval,
-            int intervalTicks,
-            @Nullable Runnable onComplete
+            int intervalTicks
     ) {
         CompletableFuture<TaskProgress> future = new CompletableFuture<>();
-        Runnable callback = () -> {
-            tickUtil.cancelPollTask();
-            if (onComplete != null) {
-                onComplete.run();
-            }
-        };
         this.executorState.dbExec().submit(() -> {
             List<Bucket> buckets;
             int numBlocks;
@@ -166,9 +159,11 @@ public class ResyncTask {
                 future.completeExceptionally(ex);
                 return;
             }
-            TaskProgress progress = new TaskProgress(numBlocks, callback);
+
+            TaskProgress progress = new TaskProgress(numBlocks);
             future.complete(progress);
             TickUtil<Bucket> tickUtil = new TickUtil<>(list -> processBuckets(buckets, progress));
+            progress.setOnComplete(tickUtil::cancelPollTask);
             tickUtil.queueElements(buckets);
             tickUtil.schedulePollTask(this.plugin,
                     this.scheduler,

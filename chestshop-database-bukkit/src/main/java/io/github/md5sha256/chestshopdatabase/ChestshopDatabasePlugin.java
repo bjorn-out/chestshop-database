@@ -6,6 +6,7 @@ import io.github.md5sha256.chestshopdatabase.adapters.worldedit.WorldEditHandler
 import io.github.md5sha256.chestshopdatabase.adapters.worldguard.WorldGuardHandler;
 import io.github.md5sha256.chestshopdatabase.command.CommandBean;
 import io.github.md5sha256.chestshopdatabase.command.FindCommand;
+import io.github.md5sha256.chestshopdatabase.command.ResyncCommand;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
 import io.github.md5sha256.chestshopdatabase.database.FindTaskFactory;
@@ -100,13 +101,19 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     private void registerCommands(@NotNull SqlSessionFactory sessionFactory) {
         Supplier<DatabaseSession> sessionSupplier = () -> new DatabaseSession(sessionFactory,
                 MariaChestshopMapper.class);
-        FindTaskFactory taskFactory = new FindTaskFactory(sessionSupplier, executorState);
+        FindTaskFactory findTaskFactory = new FindTaskFactory(sessionSupplier, executorState);
+        ResyncTaskFactory resyncTaskFactory = new ResyncTaskFactory(this.shopState,
+                this.discoverer,
+                sessionSupplier,
+                executorState,
+                this);
         var findCommand = new FindCommand(this.shopState,
                 this.discoverer,
-                taskFactory,
+                findTaskFactory,
                 this.gui);
         List<CommandBean> commands = List.of(
-                findCommand
+                findCommand,
+                new ResyncCommand(this, resyncTaskFactory)
         );
         var csdb = Commands.literal("csdb");
         this.getLifecycleManager().registerEventHandler(

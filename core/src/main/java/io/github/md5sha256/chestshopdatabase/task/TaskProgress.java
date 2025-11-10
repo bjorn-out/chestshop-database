@@ -3,17 +3,28 @@ package io.github.md5sha256.chestshopdatabase.task;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TaskProgress {
 
     private final AtomicInteger completed;
     private final int total;
-    private final Runnable onComplete;
+    private final AtomicReference<Runnable> onComplete = new AtomicReference<>();
 
-    public TaskProgress(int total, @Nullable Runnable onComplete) {
+    public TaskProgress(int total) {
         this.completed = new AtomicInteger(0);
         this.total = total;
-        this.onComplete = onComplete;
+    }
+
+    public void setOnComplete(@Nullable Runnable onComplete) {
+        this.onComplete.getAndSet(onComplete);
+        if (isDone() && onComplete != null) {
+            onComplete.run();
+        }
+    }
+
+    public int total() {
+        return this.total;
     }
 
     public boolean isDone() {
@@ -21,7 +32,7 @@ public class TaskProgress {
     }
 
     public void markCompleted() {
-        if (this.onComplete != null && this.completed.incrementAndGet() == this.total) {
+        if (this.completed.incrementAndGet() == this.total) {
             triggerCompleted();
         }
     }
@@ -31,8 +42,9 @@ public class TaskProgress {
     }
 
     public void triggerCompleted() {
-        if (this.onComplete != null) {
-            this.onComplete.run();
+        Runnable runnable = this.onComplete.get();
+        if (runnable != null) {
+            runnable.run();
         }
     }
 

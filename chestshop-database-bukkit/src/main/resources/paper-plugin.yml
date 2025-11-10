@@ -26,3 +26,6 @@ permissions:
   csdb.find:
     description: "Permission to run /csdb find"
     default: op
+  csdb.resync:
+    description: "Permission to run /csdb resync"
+    default: op
