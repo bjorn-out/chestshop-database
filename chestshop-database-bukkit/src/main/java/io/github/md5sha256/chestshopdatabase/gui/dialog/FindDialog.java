@@ -1,7 +1,7 @@
 package io.github.md5sha256.chestshopdatabase.gui.dialog;
 
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
-import io.github.md5sha256.chestshopdatabase.database.FindTaskFactory;
+import io.github.md5sha256.chestshopdatabase.database.task.FindTaskFactory;
 import io.github.md5sha256.chestshopdatabase.gui.FindState;
 import io.github.md5sha256.chestshopdatabase.gui.ShopResultsGUI;
 import io.github.md5sha256.chestshopdatabase.model.ChestshopItem;

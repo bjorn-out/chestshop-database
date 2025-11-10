@@ -1,6 +1,7 @@
-package io.github.md5sha256.chestshopdatabase.database;
+package io.github.md5sha256.chestshopdatabase.database.task;
 
 import io.github.md5sha256.chestshopdatabase.ExecutorState;
+import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
 import io.github.md5sha256.chestshopdatabase.gui.FindState;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import org.jetbrains.annotations.NotNull;

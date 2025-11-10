@@ -3,7 +3,7 @@ package io.github.md5sha256.chestshopdatabase.command;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.github.md5sha256.chestshopdatabase.ResyncTaskFactory;
+import io.github.md5sha256.chestshopdatabase.database.task.ResyncTaskFactory;
 import io.github.md5sha256.chestshopdatabase.task.TaskProgress;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;

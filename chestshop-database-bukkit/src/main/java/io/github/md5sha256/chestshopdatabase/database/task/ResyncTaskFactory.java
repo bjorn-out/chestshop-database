@@ -1,7 +1,10 @@
-package io.github.md5sha256.chestshopdatabase;
+package io.github.md5sha256.chestshopdatabase.database.task;
 
 import com.Acrobot.ChestShop.Signs.ChestShopSign;
 import com.Acrobot.ChestShop.Utils.uBlock;
+import io.github.md5sha256.chestshopdatabase.ChestShopState;
+import io.github.md5sha256.chestshopdatabase.ExecutorState;
+import io.github.md5sha256.chestshopdatabase.ItemDiscoverer;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
 import io.github.md5sha256.chestshopdatabase.model.ShopStockUpdate;
@@ -102,7 +105,6 @@ public class ResyncTaskFactory {
         try {
             Block block = chunk.getBlock(pos.xChunk(), pos.y(), pos.zChunk());
             if (!Tag.SIGNS.isTagged(block.getType())) {
-                System.out.println("invalid block");
                 return CompletableFuture.completedFuture(null);
             }
             BlockState blockState = block.getState(false);

@@ -4,7 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.md5sha256.chestshopdatabase.ChestShopState;
 import io.github.md5sha256.chestshopdatabase.ItemDiscoverer;
-import io.github.md5sha256.chestshopdatabase.database.FindTaskFactory;
+import io.github.md5sha256.chestshopdatabase.database.task.FindTaskFactory;
 import io.github.md5sha256.chestshopdatabase.gui.FindState;
 import io.github.md5sha256.chestshopdatabase.gui.ShopComparators;
 import io.github.md5sha256.chestshopdatabase.gui.ShopResultsGUI;
