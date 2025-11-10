@@ -20,4 +20,17 @@ public record BlockPosition(@NotNull UUID world, int x, int y, int z) {
 
         return (dx * dx) + (dy * dy) + (dz * dz);
     }
+
+    public int xChunk() {
+        return Math.floorMod(this.x, 16);
+    }
+
+    public int zChunk() {
+        return Math.floorMod(this.z, 16);
+    }
+
+    @NotNull
+    public ChunkPosition chunkPosition() {
+        return new ChunkPosition(this.world, this.x << 4, this.z << 4);
+    }
 }

@@ -33,6 +33,21 @@ public class MariaDatabaseUtil {
     }
 
     @NotNull
+    public String selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world) {
+        return new SQL()
+                .SELECT("""
+                        CAST(world_uuid AS BINARY(16)) AS world,
+                        pos_x AS x,
+                        pos_y AS y,
+                        pos_z AS z
+                        """
+                ).FROM("Shop")
+                .applyIf(world != null,
+                        sql -> sql.WHERE("world_uuid = CAST(#{world_uuid} AS UUID)"))
+                .toString();
+    }
+
+    @NotNull
     public String selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                                  @Param("world_uuid") @Nullable UUID world,
                                                  @Param("item_code") @Nullable String itemCode) {

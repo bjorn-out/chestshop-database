@@ -6,6 +6,7 @@ import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public interface ChestShopState {
 
@@ -13,9 +14,9 @@ public interface ChestShopState {
 
     boolean cachedShopRegistered(@NotNull BlockPosition position);
 
-    void queueShopCreation(@NotNull HydratedShop shop);
+    @NotNull CompletableFuture<Void> queueShopCreation(@NotNull HydratedShop shop);
 
-    void queueShopUpdate(@NotNull ShopStockUpdate shop);
+    @NotNull CompletableFuture<Void> queueShopUpdate(@NotNull ShopStockUpdate shop);
 
-    void queueShopDeletion(@NotNull BlockPosition position);
+    @NotNull CompletableFuture<Void> queueShopDeletion(@NotNull BlockPosition position);
 }

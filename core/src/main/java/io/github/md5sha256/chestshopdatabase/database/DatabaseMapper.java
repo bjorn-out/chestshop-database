@@ -99,7 +99,7 @@ public interface DatabaseMapper {
                                               @Nullable String itemCode);
 
     @NotNull
-    List<BlockPosition> selectShopsPositionsByWorld(@NotNull UUID world);
+    List<BlockPosition> selectShopsPositionsByWorld(@Nullable UUID world);
 
     void updateShop (@NotNull UUID world, int x, int y, int z, int stock, int estimatedCapacity);
 

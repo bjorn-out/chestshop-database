@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -29,6 +31,8 @@ public class ChestShopStateImpl implements ChestShopState {
     private final Set<ShopStockUpdate> updatedShops = new HashSet<>();
     private final Set<BlockPosition> deletedShops = new HashSet<>();
     private final Set<String> knownItemCodes = new HashSet<>();
+    private final AtomicReference<CompletableFuture<Void>> nextTask
+            = new AtomicReference<>(new CompletableFuture<>());
 
     public ChestShopStateImpl(@NotNull Duration shopCacheDuration) {
         this.shopCache = CacheBuilder.newBuilder()
@@ -64,10 +68,14 @@ public class ChestShopStateImpl implements ChestShopState {
         this.updatedShops.clear();
         this.deletedShops.clear();
         return (database) -> {
-            deleted.forEach(database::deleteShopByPos);
-            database.insertShops(toInsert);
-            database.updateShops(toUpdate);
-            database.flushSession();
+            try {
+                deleted.forEach(database::deleteShopByPos);
+                database.insertShops(toInsert);
+                database.updateShops(toUpdate);
+                database.flushSession();
+            } finally {
+                markCompleteAndReset();
+            }
         };
     }
 
@@ -77,24 +85,34 @@ public class ChestShopStateImpl implements ChestShopState {
     }
 
     @Override
-    public void queueShopCreation(@NotNull HydratedShop shop) {
+    public @NotNull CompletableFuture<Void> queueShopCreation(@NotNull HydratedShop shop) {
         BlockPosition position = shop.blockPosition();
         this.deletedShops.remove(position);
         this.createdShops.put(position, shop);
         this.knownItemCodes.add(shop.item().itemCode());
         this.shopCache.put(position, Boolean.TRUE);
+        return this.nextTask.get();
     }
 
     @Override
-    public void queueShopUpdate(@NotNull ShopStockUpdate shop) {
+    public @NotNull CompletableFuture<Void> queueShopUpdate(@NotNull ShopStockUpdate shop) {
         this.updatedShops.add(shop);
+        return this.nextTask.get();
     }
 
     @Override
-    public void queueShopDeletion(@NotNull BlockPosition position) {
+    public @NotNull CompletableFuture<Void> queueShopDeletion(@NotNull BlockPosition position) {
         this.createdShops.remove(position);
         this.deletedShops.add(position);
         this.shopCache.invalidate(position);
+        return this.nextTask.get();
+    }
+
+    private void markCompleteAndReset() {
+        this.nextTask.getAndUpdate(future -> {
+            future.complete(null);
+            return new CompletableFuture<>();
+        });
     }
 
 

@@ -108,17 +108,9 @@ public interface MariaChestshopMapper extends DatabaseMapper {
                                               @Param("item_code") @Nullable String itemCode);
 
     @Override
-    @Select("""
-            SELECT
-                CAST(world_uuid AS BINARY(16)) as world
-                pos_x AS posX,
-                pos_y AS posY,
-                pos_z AS posZ
-            WHERE
-                world_uuid = CAST(#{world_uuid} AS UUID)
-            """)
+    @SelectProvider(value = MariaDatabaseUtil.class, method = "selectShopsPositionsByWorld")
     @NotNull
-    List<BlockPosition> selectShopsPositionsByWorld(@NotNull @Param("world_uuid") UUID world);
+    List<BlockPosition> selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world);
 
     @Override
     @Update("""
