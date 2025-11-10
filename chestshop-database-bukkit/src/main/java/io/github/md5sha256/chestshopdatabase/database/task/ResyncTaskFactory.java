@@ -27,6 +27,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -156,9 +157,15 @@ public class ResyncTaskFactory {
         }
     }
 
-    private void processChunk(@NotNull Chunk chunk,
+    private void processChunk(@Nullable Chunk chunk,
                               @NotNull List<BlockPosition> blocks,
                               @NotNull TaskProgress progress) {
+        if (chunk == null) {
+            for (BlockPosition blockPosition : blocks) {
+                chestShopState.queueShopDeletion(blockPosition).thenRun(progress::markCompleted);
+            }
+            return;
+        }
         UUID world = chunk.getWorld().getUID();
         Set<BlockPosition> known = new HashSet<>(blocks);
         Set<BlockPosition> knownProcessed = new HashSet<>(known.size());
@@ -218,13 +225,7 @@ public class ResyncTaskFactory {
                 continue;
             }
             world.getChunkAtAsync(chunkPosition.chunkX(), chunkPosition.chunkZ(), false)
-                    .thenAccept(chunk -> {
-                        if (chunk != null) {
-                            chunkProcessor.queueElement(new Bucket<>(chunk, blocks));
-                        } else {
-                            progress.markCompleted(blocks.size());
-                        }
-                    });
+                    .thenAccept(chunk -> chunkProcessor.queueElement(new Bucket<>(chunk, blocks)));
         }
     }
 
