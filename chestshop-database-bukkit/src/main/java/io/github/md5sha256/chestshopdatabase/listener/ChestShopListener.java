@@ -12,9 +12,11 @@ import io.github.md5sha256.chestshopdatabase.ItemDiscoverer;
 import io.github.md5sha256.chestshopdatabase.model.ChestshopItem;
 import io.github.md5sha256.chestshopdatabase.model.HydratedShop;
 import io.github.md5sha256.chestshopdatabase.model.ShopStockUpdate;
+import io.github.md5sha256.chestshopdatabase.preview.PreviewHandler;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import io.github.md5sha256.chestshopdatabase.util.InventoryUtil;
 import io.github.md5sha256.chestshopdatabase.util.UnsafeChestShopSign;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.block.Sign;
@@ -32,8 +34,9 @@ import java.util.function.Consumer;
 
 public record ChestShopListener(
         @NotNull ChestShopState shopState,
-        @NotNull ItemDiscoverer discoverer
-) implements Listener {
+        @NotNull ItemDiscoverer discoverer,
+        @NotNull PreviewHandler previewHandler
+        ) implements Listener {
 
     private double toDouble(BigDecimal decimal) {
         return decimal.setScale(4, RoundingMode.HALF_UP)
@@ -122,7 +125,11 @@ public record ChestShopListener(
         if (container == null) {
             return;
         }
-        toHydratedShop(sign, lines, container, this.shopState::queueShopCreation);
+        World world = sign.getWorld();
+        toHydratedShop(sign, lines, container, shop -> {
+            this.shopState.queueShopCreation(shop);
+            this.previewHandler.renderPreview(world, shop);
+        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -132,7 +139,9 @@ public record ChestShopListener(
         int posX = sign.getX();
         int posY = sign.getY();
         int posZ = sign.getZ();
-        this.shopState.queueShopDeletion(new BlockPosition(world, posX, posY, posZ));
+        BlockPosition position = new BlockPosition(world, posX, posY, posZ);
+        this.shopState.queueShopDeletion(position);
+        this.previewHandler.destroyPreview(position);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

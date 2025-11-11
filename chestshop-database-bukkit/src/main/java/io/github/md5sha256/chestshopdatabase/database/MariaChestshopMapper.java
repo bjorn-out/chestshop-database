@@ -1,16 +1,17 @@
 package io.github.md5sha256.chestshopdatabase.database;
 
+import io.github.md5sha256.chestshopdatabase.model.PartialHydratedShop;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Flush;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Update;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Flush;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,6 +114,32 @@ public interface MariaChestshopMapper extends DatabaseMapper {
     List<BlockPosition> selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world);
 
     @Override
+    @Select("""
+            SELECT CAST(world_uuid AS BINARY(16))      AS worldID,
+                   pos_x                               AS posX,
+                   pos_y                               AS posY,
+                   pos_z                               AS posZ,
+                   Shop.item_code                      AS itemCode,
+                   Item.item_bytes                     AS item_bytes,
+                   owner_name                          AS ownerName,
+                   buy_price                           AS buyPrice,
+                   sell_price                          AS sellPrice,
+                   quantity,
+                   stock,
+                   estimated_capacity                  AS estimatedCapacity
+            FROM Shop
+                     INNER JOIN Item ON Shop.item_code = Item.item_code
+            WHERE Shop.world_uuid = CAST(#{world_uuid} AS UUID)
+              AND pos_x >> 4 = #{chunk_x}
+              AND pos_z >> 4 = #{chunk_z}
+            ;
+            """)
+    @NotNull
+    List<PartialHydratedShop> selectShopsInChunk(@NotNull @Param("world_uuid") UUID world,
+                                                 @Param("chunk_x") int chunkX,
+                                                 @Param("chunk_z") int chunkZ);
+
+    @Override
     @Update("""
             UPDATE Shop
             SET
@@ -127,7 +154,7 @@ public interface MariaChestshopMapper extends DatabaseMapper {
             @Param("z") int z,
             @Param("stock") int stock,
             @Param("estimated_capacity") int estimatedCapacity
-        );
+    );
 
     @Override
     @Flush

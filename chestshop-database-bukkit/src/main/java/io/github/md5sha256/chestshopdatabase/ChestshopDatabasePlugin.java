@@ -17,6 +17,8 @@ import io.github.md5sha256.chestshopdatabase.database.task.ResyncTaskFactory;
 import io.github.md5sha256.chestshopdatabase.gui.ShopResultsGUI;
 import io.github.md5sha256.chestshopdatabase.listener.ChestShopListener;
 import io.github.md5sha256.chestshopdatabase.model.ShopType;
+import io.github.md5sha256.chestshopdatabase.listener.PreviewListener;
+import io.github.md5sha256.chestshopdatabase.preview.PreviewHandler;
 import io.github.md5sha256.chestshopdatabase.settings.ComponentSerializer;
 import io.github.md5sha256.chestshopdatabase.settings.DatabaseSettings;
 import io.github.md5sha256.chestshopdatabase.settings.DummyData;
@@ -64,6 +66,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     private ShopResultsGUI gui;
     private ExecutorState executorState;
     private ReplacementRegistry replacements = new ReplacementRegistry();
+    private PreviewHandler previewHandler;
 
     @Override
     public void onLoad() {
@@ -85,18 +88,24 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         // Plugin startup logic
         UnsafeChestShopSign.init();
         ShopReplacements.registerDefaults(this.replacements);
+        previewHandler = new PreviewHandler();
         shopState = new ChestShopStateImpl(Duration.ofMinutes(5));
         discoverer = new ItemDiscoverer(50, Duration.ofMinutes(5), 50, getServer(), getLogger());
         BukkitScheduler scheduler = getServer().getScheduler();
         executorState = new ExecutorState(databaseExecutor, scheduler.getMainThreadExecutor(this));
-        gui = new ShopResultsGUI(this, this.replacements,  () -> this.settings);
-        getServer().getPluginManager()
-                .registerEvents(new ChestShopListener(shopState, discoverer), this);
+        gui = new ShopResultsGUI(this, this.replacements, () -> this.settings);
         SqlSessionFactory sessionFactory = MariaDatabase.buildSessionFactory(this.databaseSettings);
         cacheItemCodes(sessionFactory);
         registerCommands(sessionFactory);
         scheduleTasks(sessionFactory);
         registerAdapters();
+        getServer().getPluginManager()
+                .registerEvents(new ChestShopListener(shopState, discoverer, previewHandler), this);
+        getServer().getPluginManager()
+                .registerEvents(new PreviewListener(getLogger(),
+                        () -> new DatabaseSession(sessionFactory, MariaChestshopMapper.class),
+                        this.executorState,
+                        previewHandler), this);
         getLogger().info("Plugin enabled");
     }
 
@@ -234,7 +243,8 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
 
     private YamlConfigurationLoader.Builder yamlLoader() {
         return YamlConfigurationLoader.builder()
-                .defaultOptions(options -> options.serializers(builder -> builder.register(Component.class, ComponentSerializer.MINI_MESSAGE)))
+                .defaultOptions(options -> options.serializers(builder -> builder.register(Component.class,
+                        ComponentSerializer.MINI_MESSAGE)))
                 .nodeStyle(NodeStyle.BLOCK);
     }
 
