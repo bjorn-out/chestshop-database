@@ -58,7 +58,7 @@ public class PreviewHandler {
                     }
                 }, this.executorState.dbExec())
                 .thenApplyAsync(mapper -> mapper.orElse(this.settings.get()
-                        .previewDefaultVisibility()))
+                        .previewDefaultVisibility()), executorState.mainThreadExec())
                 .whenCompleteAsync((visible, exception) -> {
                     if (exception != null) {
                         exception.printStackTrace();
