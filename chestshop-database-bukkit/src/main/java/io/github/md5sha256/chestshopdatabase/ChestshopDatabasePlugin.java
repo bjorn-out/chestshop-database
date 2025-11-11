@@ -215,7 +215,8 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
                 SimpleItemStack.fromItemStack(DummyData.shopToIcon(ShopType.SELL)),
                 SimpleItemStack.fromItemStack(DummyData.shopToIcon(ShopType.BOTH)),
                 "/commandName <x> <y> <z>",
-                true
+                true,
+                0.5f
         );
         File file = new File(getDataFolder(), "dummy-settings.yml");
         YamlConfigurationLoader loader = yamlLoader().file(file).build();

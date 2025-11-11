@@ -132,7 +132,7 @@ public class PreviewHandler {
             display.setItemStack(item);
             display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
             display.setTransformationMatrix(new Matrix4f()
-                    .scale(0.5f));
+                    .scale(this.settings.get().shopPreviewScale()));
             display.setBillboard(Display.Billboard.CENTER);
         });
         displayEntities.computeIfAbsent(pos.chunkPosition(), x -> new HashMap<>())
