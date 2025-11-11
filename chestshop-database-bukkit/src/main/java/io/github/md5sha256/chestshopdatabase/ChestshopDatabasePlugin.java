@@ -6,6 +6,7 @@ import io.github.md5sha256.chestshopdatabase.adapters.worldedit.WorldEditHandler
 import io.github.md5sha256.chestshopdatabase.adapters.worldguard.WorldGuardHandler;
 import io.github.md5sha256.chestshopdatabase.command.CommandBean;
 import io.github.md5sha256.chestshopdatabase.command.FindCommand;
+import io.github.md5sha256.chestshopdatabase.command.ReloadCommand;
 import io.github.md5sha256.chestshopdatabase.command.ResyncCommand;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseMapper;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
@@ -132,7 +133,8 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
                 this);
         List<CommandBean> commands = List.of(
                 findCommand,
-                new ResyncCommand(this, resyncTaskFactory)
+                new ResyncCommand(this, resyncTaskFactory),
+                new ReloadCommand(this)
         );
         var csdb = Commands.literal("csdb");
         this.getLifecycleManager().registerEventHandler(
@@ -255,8 +257,9 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         return copyDefaultsYaml("messages");
     }
 
-    public CompletableFuture<Void> reloadMessagesAndSettings() throws IOException {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    @NotNull
+    public CompletableFuture<Boolean> reloadMessagesAndSettings() {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             ConfigurationNode messagesNode;
             Settings settings;
@@ -264,19 +267,21 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
                 messagesNode = loadMessages();
                 settings = loadSettings();
             } catch (IOException ex) {
-                future.completeExceptionally(ex);
+                ex.printStackTrace();
+                future.complete(Boolean.FALSE);
                 return;
             }
             executorState.mainThreadExec().execute(() -> {
+                this.settings = settings;
                 this.messageContainer.clear();
                 try {
                     this.messageContainer.load(messagesNode);
+                    future.complete(Boolean.TRUE);
                 } catch (IOException ex) {
                     getLogger().warning("Failed to load messages!");
                     ex.printStackTrace();
+                    future.complete(Boolean.FALSE);
                 }
-                this.settings = settings;
-                future.complete(null);
             });
         });
         return future;
