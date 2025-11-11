@@ -29,7 +29,7 @@ public class WorldGuardHandler {
     }
 
     private void initialize () {
-        replacementRegistry.stringReplacement("region-name", (shop) -> {
+        replacementRegistry.stringReplacement("%region-name%", (shop) -> {
             // Get WorldGuard instance & platform
             if (worldGuard == null) return "N/A";
             WorldGuardPlatform worldGuardPlatform = worldGuard.getPlatform();
