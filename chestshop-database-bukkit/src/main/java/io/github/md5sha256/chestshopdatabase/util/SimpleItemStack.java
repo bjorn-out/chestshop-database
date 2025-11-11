@@ -1,6 +1,5 @@
 package io.github.md5sha256.chestshopdatabase.util;
 
-import io.papermc.paper.registry.keys.DataComponentTypeKeys;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

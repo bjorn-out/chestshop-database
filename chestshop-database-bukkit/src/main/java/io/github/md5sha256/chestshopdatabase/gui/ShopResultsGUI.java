@@ -11,8 +11,10 @@ import com.github.stefvanschie.inventoryframework.pane.component.PagingButtons;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import io.github.md5sha256.chestshopdatabase.ReplacementRegistry;
 import io.github.md5sha256.chestshopdatabase.model.Shop;
+import io.github.md5sha256.chestshopdatabase.model.ShopType;
 import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
+import io.github.md5sha256.chestshopdatabase.util.SimpleItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -24,22 +26,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Objects;
+import java.util.function.Supplier;
 
-public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings, @NotNull
-                             ReplacementRegistry replacements) {
+public record ShopResultsGUI(@NotNull Plugin plugin,
+                             @NotNull ReplacementRegistry replacements,
+                             @NotNull Supplier<Settings> settings) {
 
-
-    private static Component shopDisplayName(@NotNull Shop shop) {
-        return Component.text()
-                .content(shop.ownerName())
-                .color(NamedTextColor.GREEN)
-                .decoration(TextDecoration.ITALIC, false)
-                .decoration(TextDecoration.BOLD, true)
-                .build();
-    }
 
     private static String distanceString(Shop shop, @Nullable BlockPosition queryPosition) {
         if (queryPosition == null) return "∞";
@@ -48,39 +45,38 @@ public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings,
         return String.format("%d", (long) Math.floor(Math.sqrt(squaredDistance)));
     }
 
-    private static Component formatLore(Component lore) {
+    private static Component stripItalics(Component lore) {
         return lore.decoration(TextDecoration.ITALIC, false);
     }
 
-    private List<Component> shopLore(@NotNull Shop shop,
-                                     @Nullable BlockPosition queryPosition) {
-        ReplacementRegistry forked = this.replacements.fork()
-                .stringReplacement("%distance%", s -> distanceString(s, queryPosition));
-        return Stream.of(
-                Component.text("Buy Price: %buy-price%, Sell Price: %sell-price%", NamedTextColor.AQUA),
-                Component.text("Unit Buy Price: %buy-price-unit%, Unit Sell Price: %sell-price-unit%", NamedTextColor.AQUA),
-                Component.text("Quantity: %quantity%", NamedTextColor.LIGHT_PURPLE),
-                Component.text("Stock: %stock%", NamedTextColor.YELLOW),
-                Component.text("Remaining Capacity: %capacity%", NamedTextColor.YELLOW),
-                Component.text("Distance: %distance%", NamedTextColor.RED),
-                Component.text("Location: %x%, %y%, %z% (%world%)", NamedTextColor.RED)
-        )
-                .map(component -> forked.applyReplacements(shop, component))
-                .map(ShopResultsGUI::formatLore).toList();
+    private ItemStack template(@NotNull ShopType shopType) {
+        Settings instance = this.settings.get();
+        SimpleItemStack itemStack = switch (shopType) {
+            case BUY -> instance.buyShopTemplate();
+            case SELL -> instance.sellShopTemplate();
+            case BOTH -> instance.bothShopTemplate();
+        };
+        return itemStack.asItemStack();
     }
+
 
     private ItemStack shopToIcon(@NotNull Shop shop,
                                  @Nullable BlockPosition queryPosition) {
-        Material material = switch (shop.shopType()) {
-            case BOTH -> Material.ENDER_CHEST;
-            case BUY -> Material.HOPPER_MINECART;
-            case SELL -> Material.CHEST_MINECART;
-        };
-        ItemStack itemStack = ItemStack.of(material);
+        ReplacementRegistry forked = this.replacements.fork()
+                .stringReplacement("%distance%", s -> distanceString(s, queryPosition));
+        ItemStack itemStack = template(shop.shopType());
         itemStack.editMeta(meta -> {
-            meta.displayName(shopDisplayName(shop));
-            meta.lore(shopLore(shop, queryPosition));
-        });
+                    Component displayName = stripItalics(forked.applyReplacements(shop,
+                            itemStack.effectiveName()));
+                    List<Component> lore = Objects.requireNonNullElse(meta.lore(), Collections.<Component>emptyList())
+                            .stream()
+                            .map(component -> forked.applyReplacements(shop, component))
+                            .map(ShopResultsGUI::stripItalics)
+                            .toList();
+                    meta.displayName(displayName);
+                    meta.lore(lore);
+                }
+        );
         return itemStack;
     }
 
@@ -105,7 +101,7 @@ public record ShopResultsGUI(@NotNull Plugin plugin, @NotNull Settings settings,
 
     private GuiItem shopToGuiItem(@NotNull Shop shop,
                                   @Nullable BlockPosition queryPosition) {
-        String clickCommand = settings().clickCommand();
+        String clickCommand = settings().get().clickCommand();
         if (clickCommand == null || clickCommand.isEmpty()) {
             return new GuiItem(shopToIcon(shop, queryPosition), this.plugin);
         }
