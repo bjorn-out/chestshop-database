@@ -69,6 +69,7 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
     public void onLoad() {
         try {
             initDataFolder();
+            saveDummyData();
             this.settings = loadSettings();
             this.databaseSettings = loadDatabaseSettings();
             this.messageContainer.load(loadMessages());
@@ -76,12 +77,6 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
             ex.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
             return;
-        }
-        try {
-            saveDummyData();
-        } catch (IOException ex) {
-            getLogger().warning("Failed to save dummy data");
-            ex.printStackTrace();
         }
     }
 
