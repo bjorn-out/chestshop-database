@@ -31,3 +31,5 @@ permissions:
     default: op
   csdb.preview.toggle:
     description: "Permission to toggle shop previews via /csdb find toggle preview"
+  csdb.visibility.toggle:
+    description: "Permission to toggle shop previews via /csdb find toggle visibility"
