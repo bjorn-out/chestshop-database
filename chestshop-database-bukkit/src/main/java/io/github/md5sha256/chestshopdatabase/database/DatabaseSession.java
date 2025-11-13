@@ -38,6 +38,7 @@ public class DatabaseSession implements Closeable, AutoCloseable {
     @Override
     public void close() {
         if (this.session != null) {
+            session.commit();
             session.close();
         }
     }
