@@ -19,6 +19,7 @@ CREATE TABLE Shop
     stock              INT          NOT NULL,
     estimated_capacity INT          NOT NULL,
     last_updated       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    visible            BOOLEAN   DEFAULT TRUE,
     PRIMARY KEY (world_uuid, pos_x, pos_y, pos_z),
     INDEX `idx_shop_item_code` (item_code)
 );
@@ -49,3 +50,5 @@ CREATE TABLE PreviewPreference
     player_id UUID PRIMARY KEY,
     visible   BOOLEAN DEFAULT TRUE
 );
+
+ALTER TABLE Shop ADD COLUMN IF NOT EXISTS visible BOOLEAN DEFAULT TRUE;

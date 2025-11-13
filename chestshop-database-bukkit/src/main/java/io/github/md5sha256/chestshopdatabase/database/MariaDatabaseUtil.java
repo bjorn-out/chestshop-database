@@ -33,7 +33,39 @@ public class MariaDatabaseUtil {
     }
 
     @NotNull
-    public String selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world) {
+    public String selectShopsInChunk(@NotNull @Param("world_uuid") UUID world,
+                                     @Param("chunk_x") int chunkX,
+                                     @Param("chunk_z") int chunkZ,
+                                     @Nullable Boolean visible) {
+        return new SQL()
+                .SELECT("""
+                        CAST(world_uuid AS BINARY(16))      AS worldID,
+                        pos_x                               AS posX,
+                        pos_y                               AS posY,
+                        pos_z                               AS posZ,
+                        Shop.item_code                      AS itemCode,
+                        Item.item_bytes                     AS item_bytes,
+                        owner_name                          AS ownerName,
+                        buy_price                           AS buyPrice,
+                        sell_price                          AS sellPrice,
+                        quantity,
+                        stock,
+                        estimated_capacity                  AS estimatedCapacity
+                        """)
+                .FROM("Shop")
+                .INNER_JOIN("Item ON Shop.item_code = Item.item_code")
+                .applyIf(visible != null, sql -> sql.WHERE("visible = #{visible}"))
+                .WHERE(
+                        "Shop.world_uuid = CAST(#{world_uuid} AS UUID)",
+                        "pos_x >> 4 = #{chunk_x}",
+                        "pos_z >> 4 = #{chunk_z}"
+                )
+                .toString();
+    }
+
+    @NotNull
+    public String selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world,
+                                              @Nullable @Param("visible") Boolean visible) {
         return new SQL()
                 .SELECT("""
                         CAST(world_uuid AS BINARY(16)) AS world,
@@ -42,6 +74,7 @@ public class MariaDatabaseUtil {
                         pos_z AS z
                         """
                 ).FROM("Shop")
+                .applyIf(visible != null, sql -> sql.WHERE("visible = #{visible}"))
                 .applyIf(world != null,
                         sql -> sql.WHERE("world_uuid = CAST(#{world_uuid} AS UUID)"))
                 .toString();
@@ -50,7 +83,8 @@ public class MariaDatabaseUtil {
     @NotNull
     public String selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                                  @Param("world_uuid") @Nullable UUID world,
-                                                 @Param("item_code") @Nullable String itemCode) {
+                                                 @Param("item_code") @Nullable String itemCode,
+                                                 @Param("visible") @Nullable Boolean visible) {
         return new SQL()
                 .SELECT("""
                         CAST(world_uuid AS BINARY(16)) AS worldID,
@@ -66,6 +100,7 @@ public class MariaDatabaseUtil {
                         estimated_capacity AS estimatedCapacity
                         """)
                 .FROM("Shop")
+                .applyIf(visible != null, sql -> sql.WHERE("visible = #{visible}"))
                 .applyIf(itemCode != null, sql -> sql.WHERE("item_code = #{item_code}"))
                 .applyIf(world != null,
                         sql -> sql.WHERE(

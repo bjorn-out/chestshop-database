@@ -106,12 +106,14 @@ public interface MariaChestshopMapper extends ChestshopMapper {
     @NotNull
     List<Shop> selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                               @Param("world_uuid") @Nullable UUID world,
-                                              @Param("item_code") @Nullable String itemCode);
+                                              @Param("item_code") @Nullable String itemCode,
+                                              @Param("visible") @Nullable Boolean visible);
 
     @Override
     @SelectProvider(value = MariaDatabaseUtil.class, method = "selectShopsPositionsByWorld")
     @NotNull
-    List<BlockPosition> selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world);
+    List<BlockPosition> selectShopsPositionsByWorld(@Nullable @Param("world_uuid") UUID world,
+                                                    @Nullable @Param("visible") Boolean visible);
 
     @Override
     @Select("""
@@ -137,7 +139,8 @@ public interface MariaChestshopMapper extends ChestshopMapper {
     @NotNull
     List<PartialHydratedShop> selectShopsInChunk(@NotNull @Param("world_uuid") UUID world,
                                                  @Param("chunk_x") int chunkX,
-                                                 @Param("chunk_z") int chunkZ);
+                                                 @Param("chunk_z") int chunkZ,
+                                                 @Nullable Boolean visible);
 
     @Override
     @Update("""
@@ -155,6 +158,15 @@ public interface MariaChestshopMapper extends ChestshopMapper {
             @Param("stock") int stock,
             @Param("estimated_capacity") int estimatedCapacity
     );
+
+    @Override
+    @Update("""
+            UPDATE Shop
+            SET
+                visible = #{visible}
+            WHERE world_uuid = CAST(#{world_uuid} AS UUID) AND pos_x = #{x} AND pos_y = #{y} AND pos_z = #{z}
+            """)
+    void updateShopVisibility(@NotNull UUID world, int x, int y, int z, boolean visible);
 
     @Override
     @Flush

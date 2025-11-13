@@ -28,7 +28,8 @@ public record FindTaskFactory(@NotNull Supplier<DatabaseSession> sessionSupplier
                         return session.chestshopMapper().selectShopsByShopTypeWorldItem(
                                 copy.shopTypes(),
                                 copy.world().orElse(null),
-                                copy.item().itemCode()
+                                copy.item().itemCode(),
+                                Boolean.TRUE
                         );
                     }
                 }, executorState.dbExec())

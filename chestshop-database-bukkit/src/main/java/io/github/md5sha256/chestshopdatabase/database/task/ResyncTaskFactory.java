@@ -287,7 +287,7 @@ public class ResyncTaskFactory {
             int numBlocks;
             try (DatabaseSession session = sessionSupplier.get()) {
                 ChestshopMapper mapper = session.chestshopMapper();
-                List<BlockPosition> blocks = mapper.selectShopsPositionsByWorld(null);
+                List<BlockPosition> blocks = mapper.selectShopsPositionsByWorld(null, null);
                 numBlocks = blocks.size();
                 buckets = toBuckets(blocks);
             } catch (Exception ex) {

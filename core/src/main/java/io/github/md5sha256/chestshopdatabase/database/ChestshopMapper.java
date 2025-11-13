@@ -97,15 +97,18 @@ public interface ChestshopMapper {
     @NotNull
     List<Shop> selectShopsByShopTypeWorldItem(@NotNull Set<ShopType> shopTypes,
                                               @Nullable UUID world,
-                                              @Nullable String itemCode);
+                                              @Nullable String itemCode,
+                                              @Nullable Boolean visible);
 
     @NotNull
-    List<BlockPosition> selectShopsPositionsByWorld(@Nullable UUID world);
+    List<BlockPosition> selectShopsPositionsByWorld(@Nullable UUID world, @Nullable Boolean visible);
 
     @NotNull
-    List<PartialHydratedShop> selectShopsInChunk(@NotNull UUID world, int chunkX, int chunkZ);
+    List<PartialHydratedShop> selectShopsInChunk(@NotNull UUID world, int chunkX, int chunkZ, @Nullable Boolean visible);
 
     void updateShop(@NotNull UUID world, int x, int y, int z, int stock, int estimatedCapacity);
+
+    void updateShopVisibility(@NotNull UUID world, int x, int y, int z, boolean visible);
 
     default void updateShop(@NotNull ShopStockUpdate stockUpdate) {
         updateShop(stockUpdate.worldUUID(),
