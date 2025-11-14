@@ -126,32 +126,17 @@ public interface MariaChestshopMapper extends ChestshopMapper {
                                              @Param("hologram") @Nullable Boolean hologram);
 
     @Override
-    @Select("""
-            SELECT CAST(world_uuid AS BINARY(16))      AS worldID,
-                   pos_x                               AS posX,
-                   pos_y                               AS posY,
-                   pos_z                               AS posZ,
-                   Shop.item_code                      AS itemCode,
-                   Item.item_bytes                     AS item_bytes,
-                   owner_name                          AS ownerName,
-                   buy_price                           AS buyPrice,
-                   sell_price                          AS sellPrice,
-                   quantity,
-                   stock,
-                   estimated_capacity                  AS estimatedCapacity
-            FROM Shop
-                     INNER JOIN Item ON Shop.item_code = Item.item_code
-            WHERE Shop.world_uuid = CAST(#{world_uuid} AS UUID)
-              AND pos_x >> 4 = #{chunk_x}
-              AND pos_z >> 4 = #{chunk_z}
-            ;
-            """)
+    @SelectProvider(value = MariaDatabaseUtil.class, method = "selectShopsInBoundingBox")
     @NotNull
-    List<PartialHydratedShop> selectShopsInChunk(@NotNull @Param("world_uuid") UUID world,
-                                                 @Param("chunk_x") int chunkX,
-                                                 @Param("chunk_z") int chunkZ,
-                                                 @Param("visible") @Nullable Boolean visible,
-                                                 @Param("hologram")@Nullable Boolean hologram);
+    List<PartialHydratedShop> selectShopsInBoundingBox(@Param("world_uuid") @NotNull UUID world,
+                                                       @Param("min_x") int minX,
+                                                       @Param("max_x") int maxX,
+                                                       @Param("min_z") int minZ,
+                                                       @Param("max_z") int maxZ,
+                                                       @Param("min_y") @Nullable Integer minY,
+                                                       @Param("max_y") @Nullable Integer maxY,
+                                                       @Param("visible") @Nullable Boolean visible,
+                                                       @Param("hologram") @Nullable Boolean hologram);
 
     @Override
     @Update("""
@@ -191,10 +176,10 @@ public interface MariaChestshopMapper extends ChestshopMapper {
             WHERE world_uuid = CAST(#{world_uuid} AS UUID) AND pos_x = #{x} AND pos_y = #{y} AND pos_z = #{z}
             """)
     void updateHologramVisibility(@NotNull @Param("world_uuid") UUID world,
-                              @Param("x") int x,
-                              @Param("y") int y,
-                              @Param("z") int z,
-                              @Param("visible") boolean visible);
+                                  @Param("x") int x,
+                                  @Param("y") int y,
+                                  @Param("z") int z,
+                                  @Param("visible") boolean visible);
 
     @Override
     @Flush

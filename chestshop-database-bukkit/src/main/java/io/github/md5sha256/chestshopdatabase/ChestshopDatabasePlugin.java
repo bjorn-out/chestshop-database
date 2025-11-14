@@ -33,6 +33,8 @@ import net.kyori.adventure.text.Component;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -109,10 +111,13 @@ public final class ChestshopDatabasePlugin extends JavaPlugin {
         registerAdapters();
         getServer().getPluginManager()
                 .registerEvents(new ChestShopListener(shopState, discoverer, previewHandler), this);
-        getServer().getPluginManager().registerEvents(new PreviewListener(
-                getLogger(), sessionSupplier,
-                this.executorState,
-                previewHandler), this);
+        getServer().getPluginManager().registerEvents(new PreviewListener(previewHandler), this);
+        getLogger().info("Loading previews in loaded chunks...");
+        for (World world : getServer().getWorlds()) {
+            for (Chunk chunk : world.getLoadedChunks()) {
+                previewHandler.loadPreviewsInChunk(chunk);
+            }
+        }
         getLogger().info("Plugin enabled");
     }
 

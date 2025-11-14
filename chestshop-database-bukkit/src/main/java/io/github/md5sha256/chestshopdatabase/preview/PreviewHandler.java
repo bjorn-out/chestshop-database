@@ -1,12 +1,15 @@
 package io.github.md5sha256.chestshopdatabase.preview;
 
 import io.github.md5sha256.chestshopdatabase.ExecutorState;
+import io.github.md5sha256.chestshopdatabase.database.ChestshopMapper;
 import io.github.md5sha256.chestshopdatabase.database.DatabaseSession;
 import io.github.md5sha256.chestshopdatabase.database.PreferenceMapper;
 import io.github.md5sha256.chestshopdatabase.model.HydratedShop;
+import io.github.md5sha256.chestshopdatabase.model.PartialHydratedShop;
 import io.github.md5sha256.chestshopdatabase.settings.Settings;
 import io.github.md5sha256.chestshopdatabase.util.BlockPosition;
 import io.github.md5sha256.chestshopdatabase.util.ChunkPosition;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -52,10 +55,38 @@ public class PreviewHandler {
 
     public void resizeScale() {
         float scale = this.settings.get().shopPreviewScale();
-        Matrix4f matrix = new Matrix4f().scale(scale);
+        float sanitized = scale <= 0 ? 0.5f : scale;
+        Matrix4f matrix = new Matrix4f().scale(sanitized);
         for (ItemDisplay display : allDisplays) {
             display.setTransformationMatrix(matrix);
         }
+    }
+
+    public void loadPreviewsInChunk(@NotNull Chunk chunk) {
+        World world = chunk.getWorld();
+        UUID worldId = world.getUID();
+        int chunkX = chunk.getX();
+        int chunkZ = chunk.getZ();
+        CompletableFuture.supplyAsync(() -> {
+                    try (DatabaseSession session = this.session.get()) {
+                        ChestshopMapper mapper = session.chestshopMapper();
+                        return mapper.selectShopsInChunk(worldId, chunkX, chunkZ, null, Boolean.TRUE);
+                    }
+                }, executorState.dbExec())
+                .thenApply(shops -> shops.stream().map(PartialHydratedShop::fullyHydrate).toList())
+                .whenCompleteAsync((shops, ex) -> {
+                    if (ex != null) {
+                        plugin.getLogger()
+                                .warning(String.format("Failed to load shops in chunk: %d, %d",
+                                        chunkX,
+                                        chunkZ));
+                        ex.printStackTrace();
+                        return;
+                    }
+                    for (HydratedShop shop : shops) {
+                        renderPreview(world, shop);
+                    }
+                }, executorState.mainThreadExec());
     }
 
     public void loadVisibility(@NotNull Player player) {
@@ -122,7 +153,6 @@ public class PreviewHandler {
     }
 
     public void renderPreview(@NotNull World world, @NotNull HydratedShop shop) {
-
         ItemStack item = shop.item().itemStack();
         BlockPosition pos = shop.blockPosition();
         Optional<ItemDisplay> existing = getExistingDisplay(pos);
@@ -136,23 +166,22 @@ public class PreviewHandler {
                 shop.posZ() + 0.5);
         float scale = this.settings.get().shopPreviewScale();
         float sanitized = scale <= 0 ? 0.5f : scale;
-        ItemDisplay spawned = world.spawn(location, ItemDisplay.class, display -> {
-            display.setVisibleByDefault(true);
-            display.setPersistent(false);
-            display.setItemStack(item);
-            display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
-            display.setTransformationMatrix(new Matrix4f()
-                    .scale(sanitized));
-            display.setBillboard(Display.Billboard.CENTER);
-        });
+        ItemDisplay display = world.spawn(location, ItemDisplay.class);
+        display.setVisibleByDefault(true);
+        display.setPersistent(false);
+        display.setItemStack(item);
+        display.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
+        display.setTransformationMatrix(new Matrix4f()
+                .scale(sanitized));
+        display.setBillboard(Display.Billboard.CENTER);
         displayEntities.computeIfAbsent(pos.chunkPosition(), x -> new HashMap<>())
-                .put(pos, spawned);
-        this.allDisplays.add(spawned);
+                .put(pos, display);
+        this.allDisplays.add(display);
         Server server = plugin.getServer();
         for (UUID playerId : this.hideRequested) {
             Player player = server.getPlayer(playerId);
             if (player != null) {
-                player.hideEntity(plugin, spawned);
+                player.hideEntity(plugin, display);
             }
         }
     }

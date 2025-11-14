@@ -106,15 +106,32 @@ public interface ChestshopMapper {
 
     @Nullable
     PartialHydratedShop selectShopByPosition(@NotNull UUID world, int x, int y, int z,
-                                              @Nullable Boolean visible,
-                                              @Nullable Boolean hologram);
+                                             @Nullable Boolean visible,
+                                             @Nullable Boolean hologram);
 
     @NotNull
-    List<PartialHydratedShop> selectShopsInChunk(@NotNull UUID world,
-                                                 int chunkX,
-                                                 int chunkZ,
-                                                 @Nullable Boolean visible,
-                                                 @Nullable Boolean hologram);
+    default List<PartialHydratedShop> selectShopsInChunk(@NotNull UUID world,
+                                                         int chunkX,
+                                                         int chunkZ,
+                                                         @Nullable Boolean visible,
+                                                         @Nullable Boolean hologram) {
+        int minX = chunkX << 4;
+        int maxX = minX + 15;
+        int minZ = chunkZ << 4;
+        int maxZ = minZ + 15;
+        return selectShopsInBoundingBox(world, minX, maxX, minZ, maxZ, null, null, visible, hologram);
+    }
+
+    @NotNull
+    List<PartialHydratedShop> selectShopsInBoundingBox(@NotNull UUID world,
+                                                       int minX,
+                                                       int maxX,
+                                                       int minZ,
+                                                       int maxZ,
+                                                       @Nullable Integer minY,
+                                                       @Nullable Integer maxY,
+                                                       @Nullable Boolean visible,
+                                                       @Nullable Boolean hologram);
 
     void updateShop(@NotNull UUID world, int x, int y, int z, int stock, int estimatedCapacity);
 

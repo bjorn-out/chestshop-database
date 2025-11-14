@@ -46,7 +46,7 @@ public class MariaDatabaseUtil {
                         pos_y                               AS posY,
                         pos_z                               AS posZ,
                         Shop.item_code                      AS itemCode,
-                        Item.item_bytes                     AS item_bytes,
+                        Item.item_bytes                     AS itemBytes,
                         owner_name                          AS ownerName,
                         buy_price                           AS buyPrice,
                         sell_price                          AS sellPrice,
@@ -68,11 +68,15 @@ public class MariaDatabaseUtil {
     }
 
     @NotNull
-    public String selectShopsInChunk(@NotNull @Param("world_uuid") UUID world,
-                                     @Param("chunk_x") int chunkX,
-                                     @Param("chunk_z") int chunkZ,
-                                     @Param("visible") @Nullable Boolean visible,
-                                     @Param("hologram") @Nullable Boolean hologram) {
+    public String selectShopsInBoundingBox(@NotNull @Param("world_uuid") UUID world,
+                                           @Param("min_x") int minX,
+                                           @Param("max_x") int maxX,
+                                           @Param("min_z") int minZ,
+                                           @Param("max_z") int maxZ,
+                                           @Param("min_y") @Nullable Integer minY,
+                                           @Param("max_y") @Nullable Integer maxY,
+                                           @Param("visible") @Nullable Boolean visible,
+                                           @Param("hologram") @Nullable Boolean hologram) {
         return new SQL()
                 .SELECT("""
                         CAST(world_uuid AS BINARY(16))      AS worldID,
@@ -80,7 +84,7 @@ public class MariaDatabaseUtil {
                         pos_y                               AS posY,
                         pos_z                               AS posZ,
                         Shop.item_code                      AS itemCode,
-                        Item.item_bytes                     AS item_bytes,
+                        Item.item_bytes                     AS itemBytes,
                         owner_name                          AS ownerName,
                         buy_price                           AS buyPrice,
                         sell_price                          AS sellPrice,
@@ -94,9 +98,11 @@ public class MariaDatabaseUtil {
                 .applyIf(hologram != null, sql -> sql.WHERE("hologram = #{hologram}"))
                 .WHERE(
                         "Shop.world_uuid = CAST(#{world_uuid} AS UUID)",
-                        "pos_x >> 4 = #{chunk_x}",
-                        "pos_z >> 4 = #{chunk_z}"
+                        "pos_x >= #{min_x} AND pos_x <= #{max_x}",
+                        "pos_z >= #{min_z} AND pos_z <= #{max_z}"
                 )
+                .applyIf(minY != null, sql -> sql.WHERE("pos_y >= #{min_y}"))
+                .applyIf(maxY != null, sql -> sql.WHERE("pos_y <= #{max_y}"))
                 .toString();
     }
 
