@@ -104,7 +104,7 @@ public class PreviewHandler {
                         return;
                     }
                     renderVisibility(player, visible);
-                });
+                }, this.executorState.mainThreadExec());
     }
 
     public void clearCache(@NotNull UUID player) {
